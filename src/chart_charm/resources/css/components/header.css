@@ -1,19 +1,23 @@
 #header {
     height: 10vh;
     display: flex;
-    align-items: center;
+    align-items: center; /* Aligns all items vertically */
     justify-content: space-between;
-    border: 1px solid var(--pico-border); /* Added border */
+    border: 1px solid var(--pico-border);
 }
 
 #header-burger-menu-container,
 #header-text-container,
 #header-actions-container {
     display: flex;
-    align-items: center;
+    align-items: center; /* Ensures that items within these containers are also vertically aligned */
 }
 
-#header-actions-container > button {
+#header-text-container h1 {
+    margin: 0; /* Removes default margins */
+}
+
+.transparent-action > button {
     margin-left: 10px;
     color: var(--pico-text); /* Icon color */
     background-color: transparent; /* Button background color */
