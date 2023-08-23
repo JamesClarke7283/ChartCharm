@@ -52,7 +52,7 @@ class ChartCharm(toga.App):
 
         webview = toga.WebView(url=f'http://127.0.0.1:{self.available_port}', style=Pack(flex=1))
         main_box = toga.Box(children=[webview], style=Pack(direction=COLUMN))
-        self.main_window = toga.MainWindow(title=self.formal_name)
+        self.main_window = toga.MainWindow(title=self.formal_name, size=(414, 736))
         self.main_window.content = main_box
         self.main_window.show()
 
