@@ -1,0 +1,21 @@
+#header {
+    height: 10vh;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--pico-border); /* Added border */
+}
+
+#header-burger-menu-container,
+#header-text-container,
+#header-actions-container {
+    display: flex;
+    align-items: center;
+}
+
+#header-actions-container > button {
+    margin-left: 10px;
+    color: var(--pico-text); /* Icon color */
+    background-color: transparent; /* Button background color */
+    border: 1px solid var(--pico-border); /* Button border */
+}

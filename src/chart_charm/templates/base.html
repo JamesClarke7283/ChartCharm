@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/pico.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/libraries/pico.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/libraries/fork-awesome.min.css') }}">
     {% block head %}
     {% endblock %}
 </head>
