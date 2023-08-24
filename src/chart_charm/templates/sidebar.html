@@ -1,0 +1,29 @@
+<!-- Include the stylesheet for the sidebar -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/sidebar.css') }}">
+<dialog id="sidebar-modal">
+  <article>
+    <h1>Chart Charm</h1>
+    <hr class="pico-divider"> <!-- Divider -->
+    <ul class="sidebar-menu">
+      <li><i class="fa fa-plus"></i> Home</li>
+      <li><i class="fa fa-bell"></i> Reminders</li> <!-- Reminders Icon -->
+      <li><i class="fa fa-pencil"></i> Notes</li>
+      <li><i class="fa fa-undo"></i> Backup and Restore</li> <!-- Backup and Restore Icon -->
+    </ul>
+    <hr class="pico-divider"> <!-- Divider -->
+    <ul class="sidebar-menu">
+      <li><i class="fa fa-question-circle"></i> FAQ</li>
+      <li><i class="fa fa-star"></i> Rate the app</li>
+      <li><i class="fa fa-info-circle"></i> About</li>
+    </ul>
+    <hr class="pico-divider"> <!-- Divider -->
+    <div>
+      <i class="fa fa-paint-brush"></i> <!-- You can replace with an appropriate icon -->
+      Theme
+      <select>
+        <option>Light</option>
+        <option>Dark</option>
+      </select>
+    </div>
+  </article>
+</dialog>

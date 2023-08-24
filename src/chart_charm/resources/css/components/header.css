@@ -1,25 +1,43 @@
 #header {
     height: 10vh;
     display: flex;
-    align-items: center; /* Aligns all items vertically */
+    align-items: center;
     justify-content: space-between;
     border: 1px solid var(--pico-border);
+    background-color: var(--pico-bg-primary);
 }
 
 #header-burger-menu-container,
 #header-text-container,
 #header-actions-container {
     display: flex;
-    align-items: center; /* Ensures that items within these containers are also vertically aligned */
+    align-items: center;
 }
 
-#header-text-container h1 {
-    margin: 0; /* Removes default margins */
-}
-
+.transparent-action > label,
 .transparent-action > button {
     margin-left: 10px;
-    color: var(--pico-text); /* Icon color */
-    background-color: transparent; /* Button background color */
-    border: 1px solid var(--pico-border); /* Button border */
+    color: var(--pico-text);
+    background-color: transparent;
+    border: 1px solid var(--pico-border);
+}
+
+#accordion-content {
+    display: none;
+    height: 100vh;
+    width: 80vw;
+}
+
+#accordion-toggle:checked + #accordion-content {
+    display: block;
+}
+
+.accordion-wrapper {
+    /* Additional styling for the accordion content goes here */
+}
+
+#header-burger-menu-button {
+    background-color: transparent; /* Remove blue background */
+    padding: 5px; /* Adjust padding to reduce size */
+    border: none; /* Remove border if needed */
 }
