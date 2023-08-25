@@ -8,8 +8,12 @@ from toga.style import Pack
 from toga.style.pack import COLUMN
 import multiprocessing
 import socket
-from .routes.index import index
+from .routes.index import index_blueprint
+from .routes.settings.theme import theme_blueprint
 import os
+from tortoise import Tortoise
+from platformdirs import user_data_dir
+from .models import populate, check_empty
 
 log_level_str = os.getenv('LOGLEVEL', 'INFO')
 log_level = getattr(logging, log_level_str.upper(), logging.INFO)
@@ -21,10 +25,33 @@ class ChartCharmServer:
         self.port = port
         self.shutdown_event = shutdown_event
 
+        app_name = "ChartCharm"
+        app_author = "JamesClarke"
+        data_dir = user_data_dir(app_name, app_author)
+        os.makedirs(data_dir, exist_ok=True)
+        self.db_path = os.path.join(data_dir, 'db.sqlite3')
+
         # Register Blueprints
-        self.app.register_blueprint(index)
+        self.app.register_blueprint(index_blueprint)
+        self.app.register_blueprint(theme_blueprint)
+
+    async def init_db(self):
+        await Tortoise.init(
+            db_url=f'sqlite://{self.db_path}',
+            modules={'models': ['chart_charm.models']}
+        )
+        await Tortoise.generate_schemas(safe=True)
+        # Populate database with default data if it's empty
+        if await check_empty():
+            await populate()
+
+    async def close_db(self):
+        await Tortoise.close_connections()
 
     async def run_server(self):
+        # Initialize database
+        await self.init_db()
+
         config = Config()
         config.bind = [f"127.0.0.1:{self.port}"]
 
@@ -38,6 +65,10 @@ class ChartCharmServer:
             await self.server_task
         except asyncio.CancelledError:
             logging.info("Server has been shut down gracefully.")
+
+        # Close database connections
+        await self.close_db()
+
 
 class ChartCharmClient(toga.App):
     def startup(self):

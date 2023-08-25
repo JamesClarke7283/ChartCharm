@@ -2,3 +2,5 @@ briefcase
 quart
 hypercorn
 toga
+tortoise-orm
+platformdirs
