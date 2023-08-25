@@ -9,7 +9,8 @@ from toga.style.pack import COLUMN
 import multiprocessing
 import socket
 from .routes.index import index_blueprint
-from .routes.settings.theme import theme_blueprint
+from .routes.settings.settings import settings_blueprint
+from .routes.project import project_blueprint
 import os
 from tortoise import Tortoise
 from platformdirs import user_data_dir
@@ -33,7 +34,8 @@ class ChartCharmServer:
 
         # Register Blueprints
         self.app.register_blueprint(index_blueprint)
-        self.app.register_blueprint(theme_blueprint)
+        self.app.register_blueprint(settings_blueprint)
+        self.app.register_blueprint(project_blueprint)
 
     async def init_db(self):
         await Tortoise.init(

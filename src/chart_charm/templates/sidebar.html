@@ -1,12 +1,13 @@
 <!-- Include the stylesheet for the sidebar -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components/sidebar.css') }}">
 <script src="{{ url_for('static', filename='js/components/theme_switcher.js') }}"></script>
+<script src="{{ url_for('static', filename='js/components/sidebar_modal.js') }}"></script>
 <dialog id="sidebar-modal">
   <article>
     <h1>Chart Charm</h1>
     <hr class="pico-divider"> <!-- Divider -->
     <ul class="sidebar-menu">
-      <li><i class="fa fa-plus"></i> Home</li>
+      <button id="sidebar-home-btn"><li><i class="fa fa-plus"></i> Home</li></button>
       <li><i class="fa fa-bell"></i> Reminders</li> <!-- Reminders Icon -->
       <li><i class="fa fa-pencil"></i> Notes</li>
       <li><i class="fa fa-undo"></i> Backup and Restore</li> <!-- Backup and Restore Icon -->

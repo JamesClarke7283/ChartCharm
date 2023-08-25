@@ -15,7 +15,7 @@ class Settings(models.Model):
 class Project(models.Model):
     __tablename__ = "projects"
     id = fields.IntField(pk=True)
-    name = fields.CharField(max_length=255)
+    name = fields.CharField(max_length=255, unique=True)
     description = fields.TextField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)

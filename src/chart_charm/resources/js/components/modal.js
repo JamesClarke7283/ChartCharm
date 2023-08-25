@@ -101,4 +101,7 @@ document.addEventListener("click", (event) => {
       !isClickInside && closeModal(visibleModal);
     }
   });
+
+  
+
   

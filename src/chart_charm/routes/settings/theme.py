@@ -1,8 +1,7 @@
 from quart import request, jsonify, Blueprint
 from ...models import Settings, Theme
 
-theme_blueprint = Blueprint('theme', __name__, url_prefix='/settings/theme')
-
+theme_blueprint = Blueprint('theme', __name__, url_prefix='/theme')
 
 @theme_blueprint.route('/save', methods=['POST'])
 async def save():

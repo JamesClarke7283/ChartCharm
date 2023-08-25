@@ -13,8 +13,9 @@ const loadSelectedTheme = async () => {
     setSelectedTheme(themeValue);
   };
 
+  
 document.addEventListener('DOMContentLoaded', function() {
-    loadSelectedTheme();
+  loadSelectedTheme();
     const html = document.documentElement;
     const themeSwitcher = document.getElementById('theme-switcher');
     
