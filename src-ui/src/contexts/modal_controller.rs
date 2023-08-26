@@ -7,6 +7,7 @@ pub struct ModalController {
 }
 
 impl ModalController {
+    #[must_use]
     pub fn new(cx: Scope) -> Self {
         let modal = create_rw_signal(cx, None);
         Self {
@@ -43,6 +44,12 @@ pub fn Viewer(cx: Scope) -> impl IntoView {
     }
 }
 
+#[must_use]
+/// Your function documentation
+///
+/// # Panics
+///
+/// Panics if unable to get the current modal context.
 pub fn use_controller(cx: Scope) -> ModalController {
     use_context(cx).map_or_else(|| panic!("Unable to get current modal context"), |modal_controller| modal_controller)
 }

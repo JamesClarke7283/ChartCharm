@@ -27,14 +27,14 @@
 
 #![warn(
     clippy::all,
-    clippy::restriction,
+    clippy::as_conversions,
     clippy::pedantic,
     clippy::nursery,
 )]
 #![deny(warnings)]
-
+#![feature(stmt_expr_attributes)]
 use leptos::{mount_to_body, view, warn};
-use chartcharm_server::App;
+use chartcharm_server::components::App;
 
 /// The main entry point for the front-end application.
 ///
@@ -52,6 +52,7 @@ use chartcharm_server::App;
 /// chartcharm_rust::main();
 /// ```
 pub fn main() {
+    #[must_use]
     _ = console_log::init_with_level(log::Level::Debug);
     console_error_panic_hook::set_once();
     mount_to_body(|cx| view! { cx, <App/> });

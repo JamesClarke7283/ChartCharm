@@ -1,10 +1,10 @@
-use leptos::{IntoView, Scope, component, tracing, view, warn};
+use leptos::{IntoView, Scope, component, tracing, view, warn, provide_context};
 
 use crate::contexts::modal_controller::use_controller;
-
+use crate::contexts::modal_controller::{ModalController, Viewer};
 
 #[component]
-pub fn Header(cx: Scope) -> impl IntoView {
+pub fn Headline(cx: Scope) -> impl IntoView {
     let modal = use_controller(cx);
     view! { cx,
         <header id="header" class="pico-container pico-bg-primary foreground-widget">
@@ -72,4 +72,35 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
         </div>
     </article>
     }
+}
+
+/// The main `App` component for the ChartCharm front-end.
+///
+/// This function initializes the main view of the application, which includes
+/// components like `Header` and `Sidebar`, and also sets up context management for modals.
+///
+/// # Parameters
+///
+/// - `cx: Scope` - The scope of the component.
+///
+/// # Returns
+///
+/// An implementation of `IntoView` which is the main view for the application.
+///
+/// # Examples
+///
+/// ```no_run
+/// // Initialize the App component
+/// chartcharm_lib::App(cx);
+/// ```
+#[component]
+pub fn App(cx: Scope) -> impl IntoView {
+    provide_context(cx, ModalController::new(cx));
+    view! { cx,
+        <Viewer/>
+            <div>
+                <Headline />
+            </div>
+            
+    };
 }
