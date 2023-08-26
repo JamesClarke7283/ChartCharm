@@ -1,0 +1,35 @@
+dialog#sidebar-modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 80%;
+    height: 100%;
+    background: rgba(100, 100, 100, 0.3); /* You can adjust the background color */
+    overflow-y: auto; /* Allows scrolling if the content is longer than the screen */
+  }
+  
+  body.modal-is-open main {
+    filter: blur(5px); /* Adjust blur amount as needed, 2px for a softer blur */
+  }
+  
+  /* Add this to your existing sidebar.css file */
+.sidebar-menu {
+    list-style-type: none; /* Remove bullet points */
+    padding-left: 0; /* Remove left padding */
+  }
+  
+  .sidebar-menu li {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Gap between icon and text */
+  }
+  
+  #sidebar-home-btn {
+    background: transparent;
+    border: none;
+    color: inherit; /* You can set the desired color here */
+    cursor: pointer;
+    padding: 0;
+    outline: none; /* Remove focus outline if needed */
+  }
+  

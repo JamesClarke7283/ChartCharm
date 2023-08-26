@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 leptos = { version = "0.4", features = ["csr"] }
+leptos_meta = {version = "0.4.10", features=["csr"]}
 console_log = "1.0"
 log = "0.4"
 console_error_panic_hook = "0.1"
@@ -19,6 +20,7 @@ tauri-sys = { git = "https://github.com/JonasKruckenberg/tauri-sys", rev = "9044
 ] }
 futures = "0.3"
 sea-orm = { version = "0.12.2", features = ["sqlx-mysql", "runtime-tokio-native-tls", "with-chrono"], optional = true }
+
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
