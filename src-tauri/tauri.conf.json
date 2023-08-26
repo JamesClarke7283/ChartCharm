@@ -7,7 +7,7 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "tauri-leptos-example",
+    "productName": "chart-charm",
     "version": "0.0.0"
   },
   "tauri": {
@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "cz.michalvavra.taurileptosexample",
+      "identifier": "uk.co.chartcharm",
       "longDescription": "",
       "macOS": {
         "entitlements": null,

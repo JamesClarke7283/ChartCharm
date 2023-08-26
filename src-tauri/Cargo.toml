@@ -1,8 +1,8 @@
 [package]
-name = "src_tauri"
+name = "chartcharm_client"
 version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Frontend for ChartCharm"
+authors = ["James Clarke"]
 license = ""
 repository = ""
 edition = "2021"

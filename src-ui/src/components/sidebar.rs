@@ -1,9 +1,5 @@
 use leptos::*;
 
-pub fn toggle_modal(){
-
-}
-
 // Sidebar Component
 #[component]
 pub fn Sidebar(cx: Scope) -> impl IntoView {

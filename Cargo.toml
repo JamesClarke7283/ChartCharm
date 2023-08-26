@@ -3,4 +3,4 @@ members = [
     "src-tauri",
     "src-ui",
 ]
-workspace.resolver = "2"
+resolver = "2"

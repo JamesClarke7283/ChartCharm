@@ -1,5 +1,13 @@
+#![warn(
+    clippy::all,
+    clippy::restriction,
+    clippy::pedantic,
+    clippy::nursery,
+)]
+#![deny(warnings)]
+
 use leptos::*;
-use src_ui::*;
+use chartcharm_server::*;
 
 pub fn main() {
     _ = console_log::init_with_level(log::Level::Debug);

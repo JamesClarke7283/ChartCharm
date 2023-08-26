@@ -1,5 +1,5 @@
 [package]
-name = "src_ui"
+name = "chartcharm_server"
 version = "0.1.0"
 edition = "2021"
 
@@ -19,8 +19,11 @@ tauri-sys = { git = "https://github.com/JonasKruckenberg/tauri-sys", rev = "9044
   "all",
 ] }
 futures = "0.3"
-sea-orm = { version = "0.12.2", features = ["sqlx-mysql", "runtime-tokio-native-tls", "with-chrono"], optional = true }
-
+sea-orm = { version = "0.12.2", features = ["sqlx-sqlite", "runtime-tokio-native-tls", "with-chrono"], optional = true }
+tokio = { version = "1", features = ["full"] }
+chrono = "0.4"
+dirs = "5.0"
+strum_macros = "0.25.2"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
