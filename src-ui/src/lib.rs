@@ -6,17 +6,16 @@
 )]
 #![deny(warnings)]
 
-use leptos::*;
+use leptos::{component, provide_context, tracing, view, warn, Scope, IntoView};
 mod components;
 mod contexts;
 
 use components::header::Header;
 use components::sidebar::Sidebar;
-use contexts::modal_controller::*;
+use contexts::modal_controller::{ModalController, ModalViewer};
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
-    /*provide_meta_context(cx);*/
     provide_context(cx, ModalController::new(cx));
     view! { cx,
         <ModalViewer/>

@@ -1,4 +1,4 @@
-use leptos::*;
+use leptos::{IntoView, Scope, component, tracing, view, warn};
 
 // Sidebar Component
 #[component]
