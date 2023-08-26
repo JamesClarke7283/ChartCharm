@@ -27,8 +27,8 @@ impl ModalController {
 }
 
 #[component]
-pub fn ModalViewer(cx: Scope) -> impl IntoView {
-    let modal_controller = use_modal_controller(cx);
+pub fn Viewer(cx: Scope) -> impl IntoView {
+    let modal_controller = use_controller(cx);
     view! { cx,
         <dialog open=move||modal_controller.current_modal.get().is_some() on:click=move|_|modal_controller.close()>
         {move || {
@@ -43,6 +43,6 @@ pub fn ModalViewer(cx: Scope) -> impl IntoView {
     }
 }
 
-pub fn use_modal_controller(cx: Scope) -> ModalController {
-    use_context(cx).expect("unable to get current modal context")
+pub fn use_controller(cx: Scope) -> ModalController {
+    use_context(cx).map_or_else(|| panic!("Unable to get current modal context"), |modal_controller| modal_controller)
 }
