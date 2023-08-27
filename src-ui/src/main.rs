@@ -33,7 +33,6 @@
 )]
 #![allow(clippy::module_name_repetitions)]
 #![deny(warnings)]
-#![feature(stmt_expr_attributes)]
 use leptos::{mount_to_body, view, warn};
 use chartcharm_server::components::App;
 
@@ -53,7 +52,6 @@ use chartcharm_server::components::App;
 /// chartcharm_rust::main();
 /// ```
 pub fn main() {
-    #[must_use]
     _ = console_log::init_with_level(log::Level::Debug);
     console_error_panic_hook::set_once();
     mount_to_body(|cx| view! { cx, <App/> });
