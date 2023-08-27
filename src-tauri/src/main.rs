@@ -1,4 +1,4 @@
-//! # Tauri Viewlication Entry Point
+//! # Tauri Application Entry Point
 //!
 //! This crate serves as the entry point for the `ChartCharm` Tauri application.
 //! It is responsible for initializing and running the Tauri application.
@@ -38,6 +38,7 @@
     clippy::pedantic,
     clippy::nursery,
 )]
+#![allow(clippy::module_name_repetitions)]
 #![deny(warnings)]
 
 #![cfg_attr(
