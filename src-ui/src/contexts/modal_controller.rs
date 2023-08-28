@@ -1,12 +1,30 @@
 use leptos::{IntoView, ReadSignal, RwSignal, Scope, SignalGet, SignalSet, View, component, create_rw_signal, tracing, use_context, view, warn};
-
+/// # Modal Controller
+///
+/// The `ModalController` struct is responsible for managing modals within the application.
+///
+/// ## Fields
+///
+/// - `modal: RwSignal<Option<View>>` - Read-write signal to manage the current modal view.
+/// - `current_modal: ReadSignal<Option<View>>` - Read-only signal representing the current modal view.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ModalController {
-    modal: RwSignal<Option<View>>,
+    pub modal: RwSignal<Option<View>>,
     pub current_modal: ReadSignal<Option<View>>,
 }
 
 impl ModalController {
+    /// Create a new `ModalController`.
+    ///
+    /// Initializes a new `ModalController` with a `None` modal.
+    ///
+    /// ## Parameters
+    ///
+    /// - `cx: Scope` - The scope of the component.
+    ///
+    /// ## Returns
+    ///
+    /// Returns a `ModalController` instance.
     pub fn new(cx: Scope) -> Self {
         let modal = create_rw_signal(cx, None);
         Self {
@@ -15,17 +33,36 @@ impl ModalController {
         }
     }
 
-    /// Open a new modal, closing existing modal if one exists
+    /// Open a new modal.
+    ///
+    /// Replaces the current modal with a new one.
+    ///
+    /// ## Parameters
+    ///
+    /// - `modal: View` - The new modal view to be opened.
     pub fn open(&self, modal: View) {
         self.modal.set(Some(modal));
     }
 
-    /// Close the current modal, if one is open
+    /// Close the current modal.
+    ///
+    /// Sets the current modal to `None`, effectively closing it.
     pub fn close(&self) {
         self.modal.set(None);
     }
 }
 
+/// # Modal Viewer Component
+///
+/// A component for displaying the current modal, if any exists.
+///
+/// ## Parameters
+///
+/// - `cx: Scope` - The scope of the component.
+///
+/// ## Returns
+///
+/// An implementation of `IntoView` for rendering the modal.
 #[component]
 pub fn ModalViewer(cx: Scope) -> impl IntoView {
     let modal_controller = use_modal_controller(cx);
@@ -39,10 +76,22 @@ pub fn ModalViewer(cx: Scope) -> impl IntoView {
             None
         }}
         </dialog>
-        
     }
 }
 
+/// Retrieve the current `ModalController` context.
+///
+/// ## Parameters
+///
+/// - `cx: Scope` - The scope of the component.
+///
+/// ## Returns
+///
+/// Returns a `ModalController` instance.
+///
+/// ## Panics
+///
+/// Panics if unable to get the current modal context.
 pub fn use_modal_controller(cx: Scope) -> ModalController {
     use_context(cx).expect("unable to get current modal context")
 }
