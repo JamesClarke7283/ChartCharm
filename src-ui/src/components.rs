@@ -1,4 +1,4 @@
-use leptos::{IntoView, Scope, component, tracing, view, warn};
+use leptos::{IntoView, Scope, component, tracing, view, warn, create_rw_signal, SignalGet, event_target_value, SignalSet};
 use crate::contexts::modal_controller::use_modal_controller;
 
 // Header Component
@@ -32,7 +32,7 @@ pub fn Header(cx: Scope) -> impl IntoView {
                 </button>
         
                 // Plus Icon
-                <button class="pico-btn pico-btn-icon" data-target="add-project-modal" id="header-add-data-button">
+                <button class="pico-btn pico-btn-icon" data-target="add-project-modal" id="header-add-data-button" on:click=move|_|modal.open(view!{cx, <AddProject/>})>
                     <i class="fa fa-plus" aria-hidden="true"></i>
                 </button>
             </div>
@@ -43,12 +43,12 @@ pub fn Header(cx: Scope) -> impl IntoView {
 // Sidebar Component
 #[component]
 pub fn Sidebar(cx: Scope) -> impl IntoView {
+    let modal = use_modal_controller(cx);
     view! { cx,
-    <article>
         <h1>Chart Charm</h1>
         <hr class="pico-divider"></hr>
         <ul class="sidebar-menu">
-        <button id="sidebar-home-btn"><li><i class="fa fa-plus"></i> Home</li></button>
+        <button id="sidebar-home-btn" on:click=move|_|modal.close()><li><i class="fa fa-plus"></i> Home</li></button>
         <li><i class="fa fa-bell"></i> Reminders</li> 
         <li><i class="fa fa-pencil"></i> Notes</li>
         <li><i class="fa fa-undo"></i> Backup and Restore</li> 
@@ -69,6 +69,34 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
             <option value="dark">Dark</option>
         </select>
         </div>
-    </article>
+    }
+}
+
+/// # Add Project Component
+///
+/// A component for adding a new project. This component includes a form
+/// with fields for the project's name and description, as well as "Save"
+/// and "Cancel" buttons.
+///
+/// ## Parameters
+///
+/// - `cx: Scope` - The scope of the component.
+#[component]
+pub fn AddProject(cx: Scope) -> impl IntoView{
+    let project_name = create_rw_signal(cx, String::new());
+    let project_description = create_rw_signal(cx, String::new());
+    view! { cx,
+        <form id="add-project-form" on:submit=move|ev|ev.prevent_default()>
+            <label for="project-name">Project Name:</label>
+            <input type="text" id="project-name" name="project-name" on:input=move|ev|project_name.set(event_target_value(&ev)) prop:value=move||project_name.get() required />
+
+            <label for="project-description">Project Description:</label>
+            <textarea id="project-description" name="project-description" on:input=move|ev|project_description.set(event_target_value(&ev)) prop:value=move||project_description.get()></textarea>
+
+            <button type="submit">Save</button>
+            <button type="button" on:click=|_| {
+                todo!("Close modal");
+            }>Cancel</button>
+        </form>
     }
 }

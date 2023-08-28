@@ -68,13 +68,15 @@ pub fn ModalViewer(cx: Scope) -> impl IntoView {
     let modal_controller = use_modal_controller(cx);
     view! { cx,
         <dialog open=move||modal_controller.current_modal.get().is_some() on:click=move|_|modal_controller.close()>
-        {move || {
-            if let Some(modal) = modal_controller.current_modal.get() {
-                #[allow(unused_braces)]
-                return Some(view! {cx, {modal}});
-            }
-            None
-        }}
+            <article on:click=|ev|ev.stop_propagation()>
+                {move || {
+                    if let Some(modal) = modal_controller.current_modal.get() {
+                        #[allow(unused_braces)]
+                        return Some(view! {cx, {modal}});
+                    }
+                    None
+                }}
+            </article>
         </dialog>
     }
 }
