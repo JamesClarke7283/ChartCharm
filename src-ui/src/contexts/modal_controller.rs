@@ -1,6 +1,6 @@
-use leptos::*;
+use leptos::{IntoView, ReadSignal, RwSignal, Scope, SignalGet, SignalSet, View, component, create_rw_signal, tracing, use_context, view, warn};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ModalController {
     modal: RwSignal<Option<View>>,
     pub current_modal: ReadSignal<Option<View>>,

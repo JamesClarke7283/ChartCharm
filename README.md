@@ -1,11 +1,9 @@
-# tauri-leptos-example
+# Chart Charm
 
 - [Tauri][tauri_web]
 - [Leptos][leptos_repo]
 
 See [Prerequisites](#prerequisites) section.
-
-Requires Rust nightly. See Leptos [`nightly` note][leptos_nightly_note].
 
 ```sh
 # Build and develop for desktop
@@ -18,11 +16,12 @@ cargo tauri build
 ## Prerequisites
 
 ```sh
+
+# System dependencies
+# webkit2gtk
+
 # Tauri CLI
 cargo install --locked tauri-cli
-
-# Rust nightly (required by Leptos)
-rustup toolchain install nightly --allow-downgrade
 
 # WASM target
 rustup target add wasm32-unknown-unknown
