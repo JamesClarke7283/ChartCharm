@@ -1,5 +1,13 @@
+#![warn(
+    clippy::all,
+    clippy::as_conversions,
+    clippy::pedantic,
+    clippy::nursery,
+)]
+#![allow(clippy::module_name_repetitions)]
+#![deny(warnings)]
 use leptos::*;
-use src_ui::*;
+use chartcharm_server::*;
 
 pub fn main() {
     _ = console_log::init_with_level(log::Level::Debug);

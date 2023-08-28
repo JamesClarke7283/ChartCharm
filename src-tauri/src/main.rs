@@ -1,3 +1,12 @@
+#![warn(
+    clippy::all,
+    clippy::as_conversions,
+    clippy::pedantic,
+    clippy::nursery,
+)]
+#![allow(clippy::module_name_repetitions)]
+#![deny(warnings)]
+
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"

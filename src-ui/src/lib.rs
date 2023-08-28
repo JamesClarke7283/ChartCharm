@@ -1,8 +1,13 @@
-use futures::StreamExt;
+#![warn(
+    clippy::all,
+    clippy::as_conversions,
+    clippy::pedantic,
+    clippy::nursery,
+)]
+#![allow(clippy::module_name_repetitions)]
+#![deny(warnings)]
+
 use leptos::*;
-use serde::{Deserialize, Serialize};
-use tauri_sys::{event, tauri};
-use leptos_meta::*;
 mod components;
 mod contexts;
 
