@@ -1,6 +1,5 @@
+use dirs::config_dir;
 use sea_orm::DatabaseConnection;
-use crate::{theme, settings};
-use std::path::PathBuf;
 use std::fs;
 
 pub mod data_point;

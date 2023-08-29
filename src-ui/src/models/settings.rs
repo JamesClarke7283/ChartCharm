@@ -8,16 +8,23 @@ pub struct Model {
     pub theme_selected: i32,
 }
 
-pub struct Entity;
+#[derive(Copy, Clone, Debug, EnumIter)]
+pub enum Relation {
+    Theme,
+}
 
-impl EntityName for Entity {
-    fn table_name(&self) -> &str {
-        "settings"
+impl RelationTrait for Relation {
+    fn def(&self) -> RelationDef {
+        match self {
+            Self::Theme => Entity::belongs_to(super::theme::Entity)
+                .using(super::theme::Column::Id)
+                .into(),
+        }
     }
 }
 
-impl EntityTrait for Entity {
-    type Model = Model;
-
-    type Relation = ();
+impl Related<super::theme::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Theme.def()
+    }
 }

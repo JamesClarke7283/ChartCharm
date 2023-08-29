@@ -21,16 +21,8 @@ pub enum Relation {
     DataPoint,
 }
 
-pub struct Entity;
-
-impl EntityName for Entity {
-    fn table_name(&self) -> &str {
-        "projects"
+impl Related<super::data_point::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::DataPoint.def()
     }
-}
-
-impl EntityTrait for Entity {
-    type Model = Model;
-
-    type Relation = Relation;
 }

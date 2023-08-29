@@ -11,16 +11,23 @@ pub struct Model {
     pub updated_at: DateTimeWithTimeZone,
 }
 
-pub struct Entity;
+#[derive(Copy, Clone, Debug, EnumIter)]
+pub enum Relation {
+    Project,
+}
 
-impl EntityName for Entity {
-    fn table_name(&self) -> &str {
-        "data_points"
+impl RelationTrait for Relation {
+    fn def(&self) -> RelationDef {
+        match self {
+            Self::Project => Entity::belongs_to(super::project::Entity)
+                .using(super::project::Column::Id)
+                .into(),
+        }
     }
 }
 
-impl EntityTrait for Entity {
-    type Model = Model;
-
-    type Relation = ();
+impl Related<super::project::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Project.def()
+    }
 }
