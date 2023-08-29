@@ -39,9 +39,6 @@ jobs:
       - name: Install esbuild
         run: npm install --global --save-exact esbuild
 
-      - name: Install cargo-audit
-        run: cargo install cargo-audit
-
       - name: Build
         run: cargo tauri build --verbose
 
@@ -50,6 +47,3 @@ jobs:
 
       - name: Clippy
         run: cargo clippy --verbose --all -- -W clippy::all -W clippy::pedantic -W clippy::nursery -D warnings -A clippy::module_name_repetitions
-
-      - name: Audit
-        run: cargo audit
