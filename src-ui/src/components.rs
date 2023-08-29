@@ -32,7 +32,7 @@ pub fn Header(cx: Scope) -> impl IntoView {
                 </button>
         
                 // Plus Icon
-                <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{cx, <AddProject/>})>
+                <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{cx, <Add_Project/>})>
                     <i class="fa fa-plus" aria-hidden="true"></i>
                 </button>
             </div>
@@ -82,7 +82,7 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
 ///
 /// - `cx: Scope` - The scope of the component.
 #[component]
-pub fn AddProject(cx: Scope) -> impl IntoView{
+pub fn Add_Project(cx: Scope) -> impl IntoView{
     let modal = use_modal_controller(cx);
     let project_name = create_rw_signal(cx, String::new());
     let project_description = create_rw_signal(cx, String::new());
