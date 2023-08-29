@@ -8,6 +8,7 @@ on:
 
 env:
   OPENSSL_DIR: /usr
+  OPENSSL_LIB_DIR: /usr/lib/x86_64-linux-gnu
 
 jobs:
   build:
