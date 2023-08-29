@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  OPENSSL_DIR: /usr
-  OPENSSL_LIB_DIR: /usr/lib/x86_64-linux-gnu
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,7 +22,7 @@ jobs:
           override: true
 
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y webkit2gtk-4.0 libssl-dev
+        run: sudo apt-get update && sudo apt-get install -y webkit2gtk-4.0
 
       - name: Install Dependencies
         run: |

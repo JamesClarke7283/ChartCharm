@@ -14,7 +14,7 @@ console_error_panic_hook = "0.1"
 
 serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.5"
-sea-orm = { version = "0.12", features = ["sqlx-sqlite", "runtime-tokio-native-tls", "with-chrono"]}
+sea-orm = { version = "0.12", features = ["sqlx-sqlite", "runtime-tokio-rustls", "with-chrono"]}
 
 tauri-sys = { git = "https://github.com/JonasKruckenberg/tauri-sys", rev = "904450", features = [
   "all",
