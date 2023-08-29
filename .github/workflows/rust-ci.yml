@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CC: gcc
 
     steps:
       - name: Checkout code
@@ -22,7 +24,7 @@ jobs:
           override: true
 
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y webkit2gtk-4.0
+        run: sudo apt-get update && sudo apt-get install -y webkit2gtk-4.0 build-essential libwebkit2gtk-4.0-dev gcc
 
       - name: Install Dependencies
         run: |
