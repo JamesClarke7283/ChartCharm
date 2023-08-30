@@ -1,7 +1,7 @@
 use leptos::{component, provide_context, tracing, view, warn, IntoView, Scope};
 mod components;
 mod contexts;
-mod models;
+pub mod models;
 
 use components::Header;
 use contexts::modal_controller::{ModalController, ModalViewer};

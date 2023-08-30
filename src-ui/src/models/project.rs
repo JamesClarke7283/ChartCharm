@@ -1,3 +1,4 @@
+use crate::models::project;
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
@@ -24,5 +25,13 @@ pub enum Relation {
 impl Related<super::data_point::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::DataPoint.def()
+    }
+}
+
+#[async_trait::async_trait]
+impl ActiveModelBehavior for project::ActiveModel {
+    async fn before_save<C: ConnectionTrait>(self, _db: &C, _insert: bool) -> Result<Self, DbErr> {
+        // Your logic here
+        Ok(self)
     }
 }

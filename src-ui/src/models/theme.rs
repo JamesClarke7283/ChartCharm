@@ -1,5 +1,5 @@
 use sea_orm::entity::prelude::*;
-use sea_orm::EntityTrait;
+use sea_orm::ActiveModelBehavior; // Keep this if you need custom behavior
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
 #[sea_orm(table_name = "themes")]
@@ -18,7 +18,8 @@ impl RelationTrait for Relation {
     fn def(&self) -> RelationDef {
         match self {
             Self::Settings => Entity::belongs_to(super::settings::Entity)
-                .linking(super::settings::Column::ThemeSelected) // <-- Note: using `linking` here
+                .from(Column::Id)
+                .to(super::settings::Column::ThemeSelected)
                 .into(),
         }
     }
@@ -30,23 +31,15 @@ impl Related<super::settings::Entity> for Entity {
     }
 }
 
-#[async_trait::async_trait] // <-- Add this
+#[async_trait::async_trait]
 impl ActiveModelBehavior for ActiveModel {
-    async fn before_save<C>(&self, _db: &C, _insert: bool) -> Result<Self, DbErr>
-    where
-        C: ConnectionTrait,
-    {
-        Ok(self)
-    }
-}
-
-impl EntityTrait for Entity {
-    type Model = Model;
-    type Relation = Relation;
-}
-
-impl EntityName for Entity {
-    fn table_name(&self) -> &str {
-        "themes"
+    async fn before_save<C: ConnectionTrait>(
+        self, // <- Changed from &mut self
+        _db: &C,
+        _insert: bool,
+    ) -> Result<Self, DbErr> {
+        // <- Return type also updated
+        // Your logic here
+        Ok(self) // <- Returns ownership to caller
     }
 }

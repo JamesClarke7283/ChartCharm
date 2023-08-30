@@ -1,3 +1,4 @@
+use crate::models::settings;
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
@@ -16,9 +17,7 @@ pub enum Relation {
 impl RelationTrait for Relation {
     fn def(&self) -> RelationDef {
         match self {
-            Self::Theme => Entity::belongs_to(super::theme::Entity)
-                .using(super::theme::Column::Id)
-                .into(),
+            Self::Theme => Entity::has_many(super::theme::Entity).into(),
         }
     }
 }
@@ -26,5 +25,13 @@ impl RelationTrait for Relation {
 impl Related<super::theme::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Theme.def()
+    }
+}
+
+#[async_trait::async_trait]
+impl ActiveModelBehavior for settings::ActiveModel {
+    async fn before_save<C: ConnectionTrait>(self, _db: &C, _insert: bool) -> Result<Self, DbErr> {
+        // Your logic here
+        Ok(self)
     }
 }
