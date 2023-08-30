@@ -11,7 +11,6 @@ leptos_meta = {version = "0.4.10", features=["csr"]}
 console_log = "1.0"
 log = "0.4"
 console_error_panic_hook = "0.1"
-chartcharm_database = { path = "../src-db" }
 serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.5"
 

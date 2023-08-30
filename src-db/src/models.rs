@@ -1,56 +1,59 @@
+// src-db/src/models.rs
+
 use dirs::config_dir;
-use sea_orm::{ActiveValue, DatabaseConnection, EntityTrait};
+use prsqlite::*;
 use std::fs;
 
-pub mod data_point;
-pub mod project;
-pub mod settings;
-pub mod theme;
-
-pub async fn populate(db: &DatabaseConnection) {
-    // Add the default themes
-    theme::Entity::insert(theme::ActiveModel {
-        name: ActiveValue::Set("auto".to_owned()),
-        ..Default::default()
-    })
-    .exec(db)
-    .await
-    .unwrap();
-
-    theme::Entity::insert(theme::ActiveModel {
-        name: ActiveValue::Set("light".to_owned()),
-        ..Default::default()
-    })
-    .exec(db)
-    .await
-    .unwrap();
-
-    theme::Entity::insert(theme::ActiveModel {
-        name: ActiveValue::Set("dark".to_owned()),
-        ..Default::default()
-    })
-    .exec(db)
-    .await
-    .unwrap();
-
-    // Set the default theme to auto
-    settings::Entity::insert(settings::ActiveModel {
-        theme_selected: ActiveValue::Set(1),
-        ..Default::default()
-    })
-    .exec(db)
-    .await
-    .unwrap();
+pub async fn populate(db: &mut Connection) {
+    println!("Populating database");
 }
 
-pub async fn check_empty(db: &DatabaseConnection) -> bool {
-    let themes = theme::Entity::find().all(db).await.unwrap();
-    let theme_count = themes.len();
+pub fn check_empty_sync(db: &mut Connection) -> Result<bool, String> {
+    let sql_script = fs::read_to_string("sql/count_themes.sql").expect("Unable to read SQL file");
 
-    theme_count == 0
+    let (theme_count, err_msg) = {
+        // Nested function to limit the scope of stmt and rows
+        fn inner(db: &mut Connection, sql_script: &str) -> (i64, String) {
+            let mut theme_count = 0;
+            let mut err_msg = String::new();
+            let mut stmt = db.prepare(sql_script).unwrap();
+            let mut rows = stmt.execute().unwrap();
+            if let Some(row) = rows.next_row().unwrap() {
+                let columns = row.parse().unwrap();
+                let theme_count_value = columns.get(0).to_owned();
+                if let Value::Integer(i) = theme_count_value {
+                    theme_count = i;
+                } else {
+                    err_msg = "Unexpected value type, expected an Integer".to_string();
+                }
+            } else {
+                err_msg = "No rows returned by the query".to_string();
+            }
+            (theme_count, err_msg)
+        }
+
+        inner(db, &sql_script)
+    }; // stmt and rows are dropped here because inner function scope ends
+
+    if !err_msg.is_empty() {
+        return Err(err_msg);
+    }
+
+    println!("Theme count: {}", theme_count);
+    Ok(theme_count == 0)
 }
 
-pub fn db_string() -> String {
+pub async fn check_empty(db: &mut Connection) -> bool {
+    match check_empty_sync(db) {
+        Ok(result) => result,
+        Err(e) => {
+            eprintln!("{}", e);
+            false
+        }
+    }
+}
+
+pub async fn db_string() -> String {
     let base_dir = config_dir().expect("Could not find config directory");
     println!("Base dir: {:?}", base_dir);
 
@@ -63,8 +66,13 @@ pub fn db_string() -> String {
 
     let mut db_path = db_dir;
     db_path.push("database.sqlite3");
-    let db_string = format!("sqlite://{}", db_path.to_str().unwrap());
+    let db_string = format!("{}", db_path.to_str().unwrap());
     println!("DB string: {}", db_string);
+
+    if !db_path.exists() {
+        fs::File::create(&db_path).expect("Failed to create file");
+        println!("DB file created");
+    }
 
     db_string
 }

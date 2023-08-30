@@ -18,7 +18,8 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = {version = "1.1", features = ["api-all"] }
 chartcharm_database = { path = "../src-db" }
-async-std = { version = "1.10", features = ["attributes"] }
+async-std = { version = "1.12", features = ["attributes"] }
+sqlx = { version = "0.7.1", features = ["runtime-async-std"] }
 
 [features]
 # by default Tauri runs in production mode
