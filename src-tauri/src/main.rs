@@ -6,10 +6,11 @@
 use chartcharm_database::init_db;
 use tauri::Builder;
 
-#[async_std::main]
-async fn main() {
+fn main() {
     println!("Starting Tauri application");
-    init_db().await;
+    if let Err(e) = init_db() {
+        eprintln!("Failed to initialize the database: {}", e);
+    }
 
     Builder::default()
         .run(tauri::generate_context!())

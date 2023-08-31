@@ -11,3 +11,4 @@ edition = "2021"
 prsqlite = { git = "https://github.com/kawasin73/prsqlite/", rev = "3d6cbb"}
 dirs = "5"
 async-std = { version = "1", features = ["attributes"] }
+anyhow = { version="1.0.75", features = ["std"] }

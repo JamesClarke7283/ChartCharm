@@ -4,56 +4,55 @@ use dirs::config_dir;
 use prsqlite::*;
 use std::fs;
 
-pub async fn populate(db: &mut Connection) {
+pub fn populate(db: &mut Connection) -> Result<(), Box<dyn std::error::Error>> {
     println!("Populating database");
+    // Your database population logic here...
+    Ok(())
+}
+
+pub fn initialize(db: &mut Connection) -> Result<(), Box<dyn std::error::Error>> {
+    println!("Initializing database");
+    let sql_script = fs::read_to_string("./sql/create_tables.sql")?;
+    let mut stmt = db.prepare(&sql_script)?;
+    stmt.execute()?;
+    Ok(())
 }
 
 pub fn check_empty_sync(db: &mut Connection) -> Result<bool, String> {
     let sql_script = fs::read_to_string("sql/count_themes.sql").expect("Unable to read SQL file");
 
-    let (theme_count, err_msg) = {
-        // Nested function to limit the scope of stmt and rows
-        fn inner(db: &mut Connection, sql_script: &str) -> (i64, String) {
-            let mut theme_count = 0;
-            let mut err_msg = String::new();
-            let mut stmt = db.prepare(sql_script).unwrap();
-            let mut rows = stmt.execute().unwrap();
-            if let Some(row) = rows.next_row().unwrap() {
-                let columns = row.parse().unwrap();
-                let theme_count_value = columns.get(0).to_owned();
-                if let Value::Integer(i) = theme_count_value {
-                    theme_count = i;
-                } else {
-                    err_msg = "Unexpected value type, expected an Integer".to_string();
-                }
-            } else {
-                err_msg = "No rows returned by the query".to_string();
-            }
-            (theme_count, err_msg)
-        }
+    let mut stmt = db.prepare(&sql_script).unwrap();
+    let mut rows = stmt.execute().unwrap();
 
-        inner(db, &sql_script)
-    }; // stmt and rows are dropped here because inner function scope ends
+    let row = match rows.next_row() {
+        Ok(Some(row)) => row,
+        Ok(None) => return Err("No rows returned by the query".to_string()),
+        Err(_) => return Err("Error executing SQL query".to_string()),
+    };
 
-    if !err_msg.is_empty() {
-        return Err(err_msg);
-    }
+    let columns = row.parse().unwrap();
+    let theme_count_value = columns.get(0).to_owned();
+
+    let theme_count = match theme_count_value {
+        Value::Integer(i) => i,
+        _ => return Err("Unexpected value type, expected an Integer".to_string()),
+    };
 
     println!("Theme count: {}", theme_count);
     Ok(theme_count == 0)
 }
 
-pub async fn check_empty(db: &mut Connection) -> bool {
+pub fn check_empty(db: &mut Connection) -> Result<bool, Box<dyn std::error::Error>> {
     match check_empty_sync(db) {
-        Ok(result) => result,
+        Ok(result) => Ok(result),
         Err(e) => {
             eprintln!("{}", e);
-            false
+            Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e)))
         }
     }
 }
 
-pub async fn db_string() -> String {
+pub fn db_string() -> String {
     let base_dir = config_dir().expect("Could not find config directory");
     println!("Base dir: {:?}", base_dir);
 
@@ -72,6 +71,8 @@ pub async fn db_string() -> String {
     if !db_path.exists() {
         fs::File::create(&db_path).expect("Failed to create file");
         println!("DB file created");
+    } else {
+        println!("DB file exists");
     }
 
     db_string

@@ -1,5 +1,5 @@
 -- Create Theme table
-CREATE TABLE IF NOT EXISTS Theme (
+CREATE TABLE IF NOT EXISTS theme (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL
 );
@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS Theme (
 -- Create Settings table
 CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    theme_selected INTEGER,
-    FOREIGN KEY (theme_selected) REFERENCES Theme(id)
+    name TEXT UNIQUE NOT NULL,
+    value INTEGER NOT NULL
 );
 
 -- Create Project table
