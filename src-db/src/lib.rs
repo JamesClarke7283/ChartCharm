@@ -8,20 +8,34 @@ pub mod models;
 pub async fn init_db() -> Result<(), Box<dyn std::error::Error>> {
     // Log the database string for debugging
     let database_url = models::db_string()?;
-    println!("Connecting to database at {}", database_url);
+    eprintln!("Connecting to database at {}", database_url);
 
     let file_path = Path::new(&database_url);
-    println!("Database file path: {:?}", file_path);
+    eprintln!("Database file path: {:?}", file_path);
 
-    let mut db = SqliteConnection::connect(&database_url).await?;
+    // Connect to the database
+    match SqliteConnection::connect("sqlite::memory:").await {
+        Ok(connection) => {
+            eprintln!("Successfully connected to database");
+            let mut db = connection;
+            // Create tables if they don't exist
+            match models::initialize(&mut db).await {
+                Ok(_) => eprintln!("Successfully initialized database"),
+                Err(e) => eprintln!("Failed to initialize the database: {:?}", e),
+            }
 
-    // Create tables if they don't exist
-    models::initialize(&mut db).await?;
-
-    // Populate database with default data
-    if models::check_empty(&mut db).await? {
-        models::populate(&mut db).await?;
+            // Populate database with default data
+            if models::check_empty(&mut db).await? {
+                match models::populate(&mut db).await {
+                    Ok(_) => eprintln!("Successfully populated database"),
+                    Err(e) => eprintln!("Failed to populate the database: {:?}", e),
+                }
+            }
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("Failed to connect to database: {:?}", e);
+            Err(Box::new(e))
+        }
     }
-
-    Ok(())
 }
