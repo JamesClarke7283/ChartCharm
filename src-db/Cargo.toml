@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 # Rustqlite from github
 # https://github.com/kawasin73/prsqlite/
-prsqlite = { git = "https://github.com/kawasin73/prsqlite/", rev = "3d6cbb"}
+sqlx = { version = "0.7", features = ["sqlite", "macros", "runtime-async-std"] }
 dirs = "5"
 async-std = { version = "1", features = ["attributes"] }
-anyhow = { version="1.0.75", features = ["std"] }

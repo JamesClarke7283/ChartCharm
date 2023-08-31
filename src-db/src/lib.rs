@@ -1,33 +1,26 @@
-pub mod models;
-use crate::models::{check_empty, db_string, initialize, populate};
-use prsqlite::Connection;
+use sqlx::Connection;
+use sqlx::SqliteConnection;
+use std::io::{self, ErrorKind};
 use std::path::Path;
 
-pub fn init_db() -> Result<(), Box<dyn std::error::Error>> {
+pub mod models;
+
+pub async fn init_db() -> Result<(), Box<dyn std::error::Error>> {
     // Log the database string for debugging
-    let database_url = db_string();
-    eprintln!("Connecting to database at {}", &database_url);
+    let database_url = models::db_string()?;
+    println!("Connecting to database at {}", database_url);
 
     let file_path = Path::new(&database_url);
-    eprintln!("Database file path: {:?}", file_path);
+    println!("Database file path: {:?}", file_path);
 
-    // Connect to the database
-    let mut db = match Connection::open(file_path) {
-        Ok(db) => db,
-        Err(e) => {
-            eprintln!("Error opening database: {}", e);
-            return Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                e.to_string(),
-            )) as Box<dyn std::error::Error>);
-        }
-    };
+    let mut db = SqliteConnection::connect(&database_url).await?;
+
     // Create tables if they don't exist
-    initialize(&mut db)?;
+    models::initialize(&mut db).await?;
 
     // Populate database with default data
-    if check_empty(&mut db)? {
-        // populate(&mut db).await?;
+    if models::check_empty(&mut db).await? {
+        models::populate(&mut db).await?;
     }
 
     Ok(())
