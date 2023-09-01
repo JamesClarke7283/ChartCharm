@@ -1,7 +1,9 @@
 use chartcharm_database_migration::{Migrator, MigratorTrait};
 use dirs::config_dir;
+use sea_orm::entity::prelude::*;
 use sea_orm::DatabaseConnection;
 use sea_orm::EntityTrait;
+use sea_orm::Set;
 use std::io::{self, ErrorKind};
 pub mod data_points;
 pub mod projects;
@@ -10,7 +12,39 @@ pub mod theme;
 
 pub async fn populate(db: &DatabaseConnection) -> Result<(), sea_orm::error::DbErr> {
     println!("Populating database");
-    // Your database population logic here...
+
+    // Insert themes into the Theme table using ActiveModel
+    let auto_theme = theme::ActiveModel {
+        name: Set("auto".to_owned()),
+        ..Default::default()
+    };
+
+    let light_theme = theme::ActiveModel {
+        name: Set("light".to_owned()),
+        ..Default::default()
+    };
+
+    let dark_theme = theme::ActiveModel {
+        name: Set("dark".to_owned()),
+        ..Default::default()
+    };
+
+    // Insert multiple themes
+    theme::Entity::insert_many([auto_theme, light_theme, dark_theme])
+        .exec(db)
+        .await?;
+
+    // Assume the ID of the "auto" theme is needed
+    let auto_theme_id = 1 as i32;
+
+    // Insert a new row into Settings, setting the theme to "auto" by its ID
+    let new_setting = settings::ActiveModel {
+        theme_selected: Set(auto_theme_id),
+        ..Default::default()
+    };
+
+    let _new_setting: settings::Model = new_setting.insert(db).await?;
+
     Ok(())
 }
 
