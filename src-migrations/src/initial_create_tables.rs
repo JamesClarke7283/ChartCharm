@@ -57,7 +57,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(DataPoints::Data).float().not_null())
                     .col(ColumnDef::new(DataPoints::CreatedAt).timestamp().not_null())
                     .col(ColumnDef::new(DataPoints::UpdatedAt).timestamp().not_null())
-                    .to_owned(),
+                    .clone(),
             )
             .await?;
 
@@ -78,7 +78,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Projects::Description).string().not_null())
                     .col(ColumnDef::new(Projects::CreatedAt).timestamp().not_null())
                     .col(ColumnDef::new(Projects::UpdatedAt).timestamp().not_null())
-                    .to_owned(),
+                    .clone(),
             )
             .await?;
 
@@ -96,7 +96,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Settings::ThemeSelected).integer().not_null())
-                    .to_owned(),
+                    .clone(),
             )
             .await?;
 
@@ -114,7 +114,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Theme::Name).string().not_null())
-                    .to_owned(),
+                    .clone(),
             )
             .await?;
         // Populate Theme table
@@ -130,7 +130,7 @@ impl MigrationTrait for Migration {
             .values_panic(vec![SimpleExpr::Value(Value::String(Some(Box::new(
                 "dark".to_owned(),
             ))))])
-            .to_owned();
+            .clone();
 
         manager.exec_stmt(populate_theme_stmt).await?;
 
@@ -139,7 +139,7 @@ impl MigrationTrait for Migration {
             .into_table(Settings::Table)
             .columns(vec![Settings::ThemeSelected])
             .values_panic(vec![SimpleExpr::Value(Value::Int(Some(1)))])
-            .to_owned();
+            .clone();
 
         manager.exec_stmt(populate_settings_stmt).await?;
 
@@ -148,16 +148,16 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(Theme::Table).to_owned())
+            .drop_table(Table::drop().table(Theme::Table).clone())
             .await?;
         manager
-            .drop_table(Table::drop().table(Settings::Table).to_owned())
+            .drop_table(Table::drop().table(Settings::Table).clone())
             .await?;
         manager
-            .drop_table(Table::drop().table(Projects::Table).to_owned())
+            .drop_table(Table::drop().table(Projects::Table).clone())
             .await?;
         manager
-            .drop_table(Table::drop().table(DataPoints::Table).to_owned())
+            .drop_table(Table::drop().table(DataPoints::Table).clone())
             .await?;
 
         Ok(())

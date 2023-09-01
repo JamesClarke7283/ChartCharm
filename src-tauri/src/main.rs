@@ -3,11 +3,10 @@
     windows_subsystem = "windows"
 )]
 
-use chartcharm_database;
 use tauri::Builder;
 
 #[tauri::command]
-async fn add_project(name: &str, description: &str) -> Result<String, String> {
+async fn add_project(name: &str, description: &str) -> Result<(), String> {
     let name = name.to_string();
     let description = description.to_string();
 
@@ -19,7 +18,7 @@ async fn add_project(name: &str, description: &str) -> Result<String, String> {
     match chartcharm_database::models::add_project(&name, &description).await {
         Ok(_) => {
             println!("Successfully added project");
-            Ok("Successfully added project".to_string())
+            Ok(())
         }
         Err(e) => {
             eprintln!("Failed to add project: {}", e);

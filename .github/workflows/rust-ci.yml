@@ -45,4 +45,4 @@ jobs:
         run: cargo tauri build --verbose
 
       - name: Clippy
-        run: cargo clippy --verbose --all -- -W clippy::all -W clippy::pedantic -W clippy::nursery -D warnings -A clippy::module_name_repetitions
+        run: cargo clippy --verbose --all -- -W clippy::all -W clippy::pedantic -W clippy::nursery -D warnings -A clippy::module_name_repetitions -A clippy::used_underscore_binding

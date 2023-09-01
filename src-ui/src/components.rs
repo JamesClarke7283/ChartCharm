@@ -101,7 +101,7 @@ pub fn Add_Project(cx: Scope) -> impl IntoView {
         <form id="add-project-form" on:submit=move|ev|{
             ev.prevent_default();
             async_std::task::spawn_local(async move {
-                let _ = tauri::invoke::<_, ()>("add_project", &AddProjectCmdArgs {
+                tauri::invoke::<_, ()>("add_project", &AddProjectCmdArgs {
                     name: project_name.get(),
                     description: project_description.get(),
                 })

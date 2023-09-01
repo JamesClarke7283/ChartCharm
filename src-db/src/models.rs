@@ -7,13 +7,15 @@ pub mod settings;
 pub mod theme;
 use chrono::Utc;
 
+/// # Errors
+/// Database errors are returned as a `DbErr` enum.
 pub async fn add_project(name: &str, description: &str) -> Result<(), DbErr> {
     println!("add_project function called");
 
     let conn = match get_connection().await {
         Ok(conn) => conn,
         Err(e) => {
-            println!("Failed to get database connection: {:?}", e);
+            println!("Failed to get database connection: {e:?}");
             return Err(DbErr::Custom(e.to_string()));
         }
     };
@@ -30,11 +32,11 @@ pub async fn add_project(name: &str, description: &str) -> Result<(), DbErr> {
 
     match project.insert(&conn).await {
         Ok(project) => {
-            println!("Added project: {:?}", project);
+            println!("Added project: {project:?}");
             Ok(())
         }
         Err(e) => {
-            println!("Failed to insert project: {:?}", e);
+            println!("Failed to insert project: {e:?}");
             Err(e)
         }
     }

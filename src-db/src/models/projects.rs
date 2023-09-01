@@ -1,6 +1,6 @@
 use chrono::Utc;
 use sea_orm::prelude::*;
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "projects")]
 pub struct Model {
     #[sea_orm(primary_key)]
