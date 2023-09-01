@@ -19,7 +19,7 @@ tauri-sys = { git = "https://github.com/JonasKruckenberg/tauri-sys", rev = "9044
 ] }
 futures = "0.3"
 
-async-std = { version = "1.12.0", features = ["attributes"] }
+async-std = { version = "1.12.0", features = ["attributes", "unstable"] }
 
 
 [dev-dependencies]

@@ -3,8 +3,8 @@ use leptos::{
     component, create_rw_signal, event_target_value, tracing, view, warn, IntoView, Scope,
     SignalGet, SignalSet,
 };
-use serde::{Deserialize, Serialize};
-use tauri_sys::{event, tauri};
+use serde::Serialize;
+use tauri_sys::tauri;
 
 #[derive(Serialize)]
 struct AddProjectCmdArgs {
@@ -100,8 +100,20 @@ pub fn Add_Project(cx: Scope) -> impl IntoView {
     view! { cx,
         <form id="add-project-form" on:submit=move|ev|{
             ev.prevent_default();
-            //tauri::invoke("add_Project", &AddProjectCmdArgs{name: "test".to_string(), description: "test_description".to_string()});
+            async_std::task::spawn_local(async move {
+                let _ = tauri::invoke::<_, ()>("add_project", &AddProjectCmdArgs {
+                    name: project_name.get(),
+                    description: project_description.get(),
+                })
+                .await
+                .unwrap_or_else(|e| {
+                    warn!("Failed to call add_Project: {}", e);
+                });
+            });
+
+
             //add_project(project_name.get(), project_description.get());
+            modal.close();
         }>
             <label for="project-name">Project Name:</label>
             <input type="text" id="project-name" name="project-name" on:input=move|ev|project_name.set(event_target_value(&ev)) prop:value=move||project_name.get() required />

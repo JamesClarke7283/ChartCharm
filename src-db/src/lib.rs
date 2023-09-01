@@ -3,6 +3,7 @@ use sea_orm::DatabaseConnection;
 pub mod models;
 use chartcharm_database_migration::{Migrator, MigratorTrait};
 use dirs::config_dir;
+use std::error::Error;
 use std::io::{self, ErrorKind};
 
 pub async fn initialize(db: &DatabaseConnection) -> Result<(), sea_orm::error::DbErr> {
@@ -42,24 +43,21 @@ pub async fn db_string() -> Result<String, io::Error> {
     Ok(db_string)
 }
 
-pub async fn get_connection() -> DatabaseConnection {
-    let db_string = db_string().await.unwrap();
-    Database::connect(&db_string).await.unwrap()
-}
-
-pub async fn init_db() -> Result<(), Box<dyn std::error::Error>> {
-    // Connect to the database
-    let db = get_connection().await;
-    eprintln!("Successfully connected to database");
-
-    // Create tables if they don't exist
-    match initialize(&db).await {
-        Ok(_) => eprintln!("Successfully initialized database"),
+pub async fn get_connection() -> Result<DatabaseConnection, Box<dyn Error>> {
+    let db_string = db_string().await?;
+    match Database::connect(&db_string).await {
+        Ok(db) => Ok(db),
         Err(e) => {
-            eprintln!("Failed to initialize the database: {:?}", e);
-            return Err(Box::new(e));
+            eprintln!("Failed to connect to database: {:?}", e);
+            Err(Box::new(e))
         }
     }
+}
 
+pub async fn init_db() -> Result<(), Box<dyn Error>> {
+    let db = get_connection().await?;
+    eprintln!("Successfully connected to database");
+    initialize(&db).await?;
+    eprintln!("Successfully initialized database");
     Ok(())
 }

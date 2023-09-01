@@ -1,8 +1,8 @@
 [package]
 name = "chartcharm_client"
 version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "A ChartCharm client built with Tauri."
+authors = ["James Clarke"]
 license = ""
 repository = ""
 edition = "2021"
@@ -18,7 +18,8 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = {version = "1.1", features = ["api-all"] }
 chartcharm_database = { path = "../src-db" }
-async-std = { version = "1.12", features = ["attributes"] }
+sea-orm = { version = "0.12", features = ["sqlx-sqlite", "runtime-async-std"] }
+async-std = { version = "1.12", features = ["attributes", "unstable"] }
 sqlx = { version = "0.7.1", features = ["runtime-async-std"] }
 
 [features]

@@ -1,5 +1,5 @@
+use chrono::Utc;
 use sea_orm::prelude::*;
-
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
 #[sea_orm(table_name = "projects")]
 pub struct Model {
@@ -7,8 +7,8 @@ pub struct Model {
     pub id: i32,
     pub name: String,
     pub description: String,
-    pub created_at: chrono::NaiveDateTime,
-    pub updated_at: chrono::NaiveDateTime,
+    pub created_at: chrono::DateTime<Utc>,
+    pub updated_at: chrono::DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
