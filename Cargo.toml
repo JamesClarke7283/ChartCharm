@@ -4,5 +4,6 @@ members = [
     "src-ui",
     "src-db",
     "src-migrations",
+    "src-shared",
 ]
 resolver = "2"

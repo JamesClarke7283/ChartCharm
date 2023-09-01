@@ -2,7 +2,7 @@ use leptos::{component, provide_context, tracing, view, warn, IntoView, Scope};
 mod components;
 mod contexts;
 
-use components::Header;
+use components::{Header, ProjectList};
 use contexts::modal_controller::{ModalController, ModalViewer};
 
 /// # App Component
@@ -40,6 +40,7 @@ pub fn App(cx: Scope) -> impl IntoView {
         <ModalViewer/>
             <div>
                 <Header />
+                <ProjectList />
             </div>
     }
 }

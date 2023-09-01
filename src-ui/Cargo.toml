@@ -13,14 +13,12 @@ log = "0.4"
 console_error_panic_hook = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.5"
+chartcharm_shared = { path = "../src-shared" }
 
 tauri-sys = { git = "https://github.com/JonasKruckenberg/tauri-sys", rev = "904450", features = [
   "all",
 ] }
 futures = "0.3"
-
-async-std = { version = "1.12.0", features = ["attributes", "unstable"] }
-
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"

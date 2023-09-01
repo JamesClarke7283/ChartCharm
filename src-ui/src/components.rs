@@ -1,7 +1,8 @@
 use crate::contexts::modal_controller::use_modal_controller;
+use chartcharm_shared::Project;
 use leptos::{
-    component, create_rw_signal, event_target_value, tracing, view, warn, IntoView, Scope,
-    SignalGet, SignalSet,
+    component, create_action, create_resource, create_rw_signal, event_target_value, tracing, view,
+    warn, For, IntoView, Scope, SignalGet, SignalSet,
 };
 use serde::Serialize;
 use tauri_sys::tauri;
@@ -97,22 +98,23 @@ pub fn Add_Project(cx: Scope) -> impl IntoView {
     let modal = use_modal_controller(cx);
     let project_name = create_rw_signal(cx, String::new());
     let project_description = create_rw_signal(cx, String::new());
+    let add_project = create_action(cx, move |_: &()| async move {
+        tauri::invoke::<_, ()>(
+            "add_project",
+            &AddProjectCmdArgs {
+                name: project_name.get(),
+                description: project_description.get(),
+            },
+        )
+        .await
+        .unwrap_or_else(|e| {
+            warn!("Failed to call add_Project: {}", e);
+        });
+    });
     view! { cx,
         <form id="add-project-form" on:submit=move|ev|{
             ev.prevent_default();
-            async_std::task::spawn_local(async move {
-                tauri::invoke::<_, ()>("add_project", &AddProjectCmdArgs {
-                    name: project_name.get(),
-                    description: project_description.get(),
-                })
-                .await
-                .unwrap_or_else(|e| {
-                    warn!("Failed to call add_Project: {}", e);
-                });
-            });
-
-
-            //add_project(project_name.get(), project_description.get());
+            add_project.dispatch(());
             modal.close();
         }>
             <label for="project-name">Project Name:</label>
@@ -125,5 +127,48 @@ pub fn Add_Project(cx: Scope) -> impl IntoView {
             <button type="button" on:click=move|_|modal.close() {
             }>Cancel</button>
         </form>
+    }
+}
+
+#[component]
+pub fn ProjectTile<'a>(cx: Scope, title: &'a str, description: &'a str) -> impl IntoView {
+    view!(cx,
+        <div class="project-tile">
+            <h1>Project Name</h1>
+            <p>{title.to_string()}</p>
+            <hr class="pico-divider"></hr>
+            <p>Project Description</p>
+            <p>{description.to_string()}</p>
+        </div>
+    )
+}
+
+#[component]
+pub fn ProjectList(cx: Scope) -> impl IntoView {
+    let projects = create_resource(
+        cx,
+        || {},
+        move |_| async move {
+            let retrieved_projects = match tauri::invoke("list_projects", &()).await {
+                Ok(projects) => projects,
+                Err(e) => {
+                    warn!("Failed to call list_projects: {}", e);
+                    return Vec::<Project>::new();
+                }
+            };
+            retrieved_projects
+        },
+    );
+    view! {
+        cx,
+        <div class="project-list">
+            <For
+                each=move || projects.read(cx).unwrap_or_default()
+                key=|project| project.id
+                view=move |cx, project: Project| {
+                    view!(cx, <ProjectTile title=&project.name description=&project.description />)
+                }
+            />
+        </div>
     }
 }
