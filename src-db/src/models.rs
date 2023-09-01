@@ -1,8 +1,8 @@
+use chartcharm_database_migration::{Migrator, MigratorTrait};
 use dirs::config_dir;
 use sea_orm::DatabaseConnection;
 use sea_orm::EntityTrait;
 use std::io::{self, ErrorKind};
-
 pub mod data_points;
 pub mod projects;
 pub mod settings;
@@ -16,6 +16,8 @@ pub async fn populate(db: &DatabaseConnection) -> Result<(), sea_orm::error::DbE
 
 pub async fn initialize(db: &DatabaseConnection) -> Result<(), sea_orm::error::DbErr> {
     println!("Initializing database");
+    // Apply all pending migrations
+    Migrator::up(db, None).await?;
     // Initialize your tables
     println!("Successfully created tables");
     Ok(())

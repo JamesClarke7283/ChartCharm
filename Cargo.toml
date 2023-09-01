@@ -3,5 +3,6 @@ members = [
     "src-tauri",
     "src-ui",
     "src-db",
+    "src-migrations",
 ]
 resolver = "2"
