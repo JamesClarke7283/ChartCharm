@@ -1,5 +1,16 @@
-use leptos::{IntoView, Scope, component, tracing, view, warn, create_rw_signal, SignalGet, event_target_value, SignalSet};
 use crate::contexts::modal_controller::use_modal_controller;
+use leptos::{
+    component, create_rw_signal, event_target_value, tracing, view, warn, IntoView, Scope,
+    SignalGet, SignalSet,
+};
+use serde::{Deserialize, Serialize};
+use tauri_sys::{event, tauri};
+
+#[derive(Serialize)]
+struct AddProjectCmdArgs {
+    name: String,
+    description: String,
+}
 
 // Header Component
 #[component]
@@ -13,24 +24,24 @@ pub fn Header(cx: Scope) -> impl IntoView {
                     <i class="fa fa-bars" aria-hidden="true"></i>
                 </button>
             </div>
-            
+
             // App Name: Chart Charm
             <div id="header-text-container">
                 <h1 class="pico-h3 pico-mb-0">"Chart Charm"</h1>
             </div>
-            
+
             // Icons: Import, Export, and Plus
             <div id="header-actions-container" class="transparent-action">
                 // Import Icon
                 <button class="pico-btn pico-btn-icon" id="header-import-data-button">
                     <i class="fa fa-upload" aria-hidden="true"></i>
                 </button>
-                
+
                 // Export Icon
                 <button class="pico-btn pico-btn-icon" id="header-export-data-button">
                     <i class="fa fa-download" aria-hidden="true"></i>
                 </button>
-        
+
                 // Plus Icon
                 <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{cx, <Add_Project/>})>
                     <i class="fa fa-plus" aria-hidden="true"></i>
@@ -49,9 +60,9 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
         <hr class="pico-divider"></hr>
         <ul class="sidebar-menu">
         <button id="sidebar-home-btn" on:click=move|_|modal.close()><li><i class="fa fa-plus"></i> Home</li></button>
-        <li><i class="fa fa-bell"></i> Reminders</li> 
+        <li><i class="fa fa-bell"></i> Reminders</li>
         <li><i class="fa fa-pencil"></i> Notes</li>
-        <li><i class="fa fa-undo"></i> Backup and Restore</li> 
+        <li><i class="fa fa-undo"></i> Backup and Restore</li>
         </ul>
         <hr class="pico-divider"></hr>
         <ul class="sidebar-menu">
@@ -61,7 +72,7 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
         </ul>
         <hr class="pico-divider"></hr>
         <div>
-        <i class="fa fa-paint-brush"></i> 
+        <i class="fa fa-paint-brush"></i>
         Theme
         <select id="theme-switcher">
             <option value="auto">OS Default</option>
@@ -82,12 +93,16 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
 ///
 /// - `cx: Scope` - The scope of the component.
 #[component]
-pub fn Add_Project(cx: Scope) -> impl IntoView{
+pub fn Add_Project(cx: Scope) -> impl IntoView {
     let modal = use_modal_controller(cx);
     let project_name = create_rw_signal(cx, String::new());
     let project_description = create_rw_signal(cx, String::new());
     view! { cx,
-        <form id="add-project-form" on:submit=move|ev|ev.prevent_default()>
+        <form id="add-project-form" on:submit=move|ev|{
+            ev.prevent_default();
+            //tauri::invoke("add_Project", &AddProjectCmdArgs{name: "test".to_string(), description: "test_description".to_string()});
+            //add_project(project_name.get(), project_description.get());
+        }>
             <label for="project-name">Project Name:</label>
             <input type="text" id="project-name" name="project-name" on:input=move|ev|project_name.set(event_target_value(&ev)) prop:value=move||project_name.get() required />
 

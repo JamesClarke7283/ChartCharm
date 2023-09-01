@@ -6,6 +6,14 @@
 use chartcharm_database::init_db;
 use tauri::Builder;
 
+#[tauri::command]
+fn add_project(name: &str, description: &str) {
+    println!(
+        "Added Project: '{}' with description '{}'",
+        name, description
+    );
+}
+
 #[async_std::main]
 async fn main() {
     println!("Starting Tauri application");
@@ -14,6 +22,7 @@ async fn main() {
     }
 
     Builder::default()
+        .invoke_handler(tauri::generate_handler![add_project])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

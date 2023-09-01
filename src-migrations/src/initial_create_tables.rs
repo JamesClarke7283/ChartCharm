@@ -1,6 +1,5 @@
 use sea_orm_migration::prelude::*;
-use sea_query::{ColumnDef, Iden, Table};
-
+use sea_query::{ColumnDef, Iden};
 #[derive(Iden)]
 enum DataPoints {
     Table,
@@ -118,6 +117,31 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+        // Populate Theme table
+        let populate_theme_stmt = Query::insert()
+            .into_table(Theme::Table)
+            .columns(vec![Theme::Name])
+            .values_panic(vec![SimpleExpr::Value(Value::String(Some(Box::new(
+                "auto".to_owned(),
+            ))))])
+            .values_panic(vec![SimpleExpr::Value(Value::String(Some(Box::new(
+                "light".to_owned(),
+            ))))])
+            .values_panic(vec![SimpleExpr::Value(Value::String(Some(Box::new(
+                "dark".to_owned(),
+            ))))])
+            .to_owned();
+
+        manager.exec_stmt(populate_theme_stmt).await?;
+
+        // Populate Settings table
+        let populate_settings_stmt = Query::insert()
+            .into_table(Settings::Table)
+            .columns(vec![Settings::ThemeSelected])
+            .values_panic(vec![SimpleExpr::Value(Value::Int(Some(1)))])
+            .to_owned();
+
+        manager.exec_stmt(populate_settings_stmt).await?;
 
         Ok(())
     }
