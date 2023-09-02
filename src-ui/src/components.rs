@@ -7,6 +7,8 @@ use leptos::{
 use serde::Serialize;
 use tauri_sys::tauri;
 
+use crate::utilities::set_theme;
+
 #[derive(Serialize)]
 struct AddProjectCmdArgs {
     name: String,
@@ -56,6 +58,7 @@ pub fn Header(cx: Scope) -> impl IntoView {
 #[component]
 pub fn Sidebar(cx: Scope) -> impl IntoView {
     let modal = use_modal_controller(cx);
+    let theme = create_rw_signal(cx, String::new());
     view! { cx,
         <h1>Chart Charm</h1>
         <hr class="pico-divider"></hr>
@@ -75,7 +78,10 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
         <div>
         <i class="fa fa-paint-brush"></i>
         Theme
-        <select id="theme-switcher">
+        <select id="theme-switcher" on:change=move|ev|{
+            theme.set(event_target_value(&ev));
+            set_theme(&theme.get());
+        } prop:value=theme.get()>
             <option value="auto">OS Default</option>
             <option value="light">Light</option>
             <option value="dark">Dark</option>
