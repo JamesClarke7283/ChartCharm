@@ -4,8 +4,8 @@ use sea_orm::prelude::*;
 #[sea_orm(table_name = "settings")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
-    pub theme_selected: i32,
+    pub id: u8,
+    pub theme_selected: u8,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

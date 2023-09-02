@@ -2,7 +2,8 @@ use wasm_bindgen::JsCast;
 use web_sys::window;
 
 
-pub fn set_theme(theme: &str) {
+pub fn set_displayed_theme(theme: &str) {
+    println!("Setting displayed theme to '{}'", theme);
     let window = window().expect("should have a window in this context");
     let document = window.document().expect("should have a document on window");
     let document_element = document.document_element().expect("document should have a root element");

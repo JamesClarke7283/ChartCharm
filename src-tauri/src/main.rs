@@ -30,6 +30,38 @@ async fn add_project(name: &str, description: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
+async fn update_theme(theme: &str) -> Result<(), String> {
+    let theme = theme.to_string();
+
+    println!("Updated theme to '{}'", theme);
+
+    match models::update_theme(&theme).await {
+        Ok(_) => {
+            println!("Successfully updated theme");
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("Failed to update theme: {}", e);
+            Err(format!("Failed to update theme: {}", e))
+        }
+    }
+}
+
+#[tauri::command]
+async fn query_theme() -> Result<String, String> {
+    match models::query_theme().await {
+        Ok(theme) => {
+            println!("Retrieved theme");
+            Ok(theme)
+        }
+        Err(e) => {
+            eprintln!("Failed to retrieve theme: {}", e);
+            Err(format!("Failed to retrieve theme: {}", e))
+        }
+    }
+}
+
+#[tauri::command]
 async fn list_projects() -> Result<Vec<Project>, String> {
     println!("list_projects function called");
 
@@ -53,7 +85,7 @@ async fn main() {
     }
 
     Builder::default()
-        .invoke_handler(tauri::generate_handler![add_project, list_projects])
+        .invoke_handler(tauri::generate_handler![add_project, list_projects, update_theme, query_theme])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

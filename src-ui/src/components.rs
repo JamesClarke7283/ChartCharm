@@ -6,13 +6,19 @@ use leptos::{
 };
 use serde::Serialize;
 use tauri_sys::tauri;
-
-use crate::utilities::set_theme;
+use wasm_bindgen::JsCast;
+use web_sys::HtmlSelectElement;
+use crate::utilities::set_displayed_theme;
 
 #[derive(Serialize)]
 struct AddProjectCmdArgs {
     name: String,
     description: String,
+}
+
+#[derive(Serialize)]
+struct UpdateThemeCmdArgs {
+    theme: String,
 }
 
 // Header Component
@@ -59,6 +65,41 @@ pub fn Header(cx: Scope) -> impl IntoView {
 pub fn Sidebar(cx: Scope) -> impl IntoView {
     let modal = use_modal_controller(cx);
     let theme = create_rw_signal(cx, String::new());
+
+    let query_theme = create_action(cx, move |_| async move {
+        match tauri::invoke::<(), String>("query_theme", &()).await {
+            Ok(retrieved_theme) => {
+                theme.set(retrieved_theme.clone());
+                set_displayed_theme(&theme.get());
+    
+                // New code to set the initial value of the select box
+                let window = web_sys::window().expect("should have a window in this context");
+                let document = window.document().expect("should have a document on window");
+                if let Some(select_box) = document.get_element_by_id("theme-switcher") {
+                    let select_box: HtmlSelectElement = select_box.dyn_into().unwrap();
+                    select_box.set_value(&retrieved_theme);
+                }
+            },
+            Err(e) => {
+                warn!("Failed to call query_theme: {}", e);
+            }
+        }
+    });
+    
+    
+    query_theme.dispatch(&());
+        
+    let update_theme = create_action(cx, move |_| async move {
+        match tauri::invoke::<UpdateThemeCmdArgs, ()>("update_theme", &UpdateThemeCmdArgs{theme:theme.get()}).await {
+            Ok(_) => {
+                set_displayed_theme(&theme.get());
+            },
+            Err(e) => {
+                warn!("Failed to call set_theme: {}", e);
+            }
+        }
+    });
+    
     view! { cx,
         <h1>Chart Charm</h1>
         <hr class="pico-divider"></hr>
@@ -79,8 +120,9 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
         <i class="fa fa-paint-brush"></i>
         Theme
         <select id="theme-switcher" on:change=move|ev|{
+            println!("Theme changed to: {}", event_target_value(&ev));
             theme.set(event_target_value(&ev));
-            set_theme(&theme.get());
+            update_theme.dispatch(&());
         } prop:value=theme.get()>
             <option value="auto">OS Default</option>
             <option value="light">Light</option>
