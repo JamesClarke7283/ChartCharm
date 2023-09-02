@@ -182,14 +182,22 @@ pub fn Add_Project(cx: Scope) -> impl IntoView {
 pub fn ProjectTile<'a>(cx: Scope, title: &'a str, description: &'a str) -> impl IntoView {
     view!(cx,
         <div class="project-tile">
-            <h1>Project Name</h1>
-            <p>{title.to_string()}</p>
+        <button id="project-button">
+            <div class="title-container">
+                <h1>{title.to_string()}</h1>
+                <button class="icon-button">
+                    <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+                </button>
+            </div>
             <hr class="pico-divider"></hr>
-            <p>Project Description</p>
             <p>{description.to_string()}</p>
+            </button>
         </div>
+        
     )
 }
+
+
 
 #[component]
 pub fn ProjectList(cx: Scope) -> impl IntoView {

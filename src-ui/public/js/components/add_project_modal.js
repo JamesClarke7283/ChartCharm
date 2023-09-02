@@ -1,1 +1,0 @@
-document.getElementById('header-add-data-button').addEventListener('click', toggleModal);

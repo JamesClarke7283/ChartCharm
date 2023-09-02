@@ -1,0 +1,29 @@
+.project-tile {
+    width: calc(50% - 10px); 
+    box-sizing: border-box;
+    margin: 5px;
+    padding: 15px;
+    border-radius: 10px; 
+    position: relative; 
+
+    .title-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .icon-button {
+        width: 3rem;
+        height: 3rem; 
+        background: none;
+        border: none;
+        cursor: pointer;
+        overflow: hidden;
+    
+        i.fa.fa-ellipsis-v {
+            font-size: 1.5em;
+            float: right;
+        }
+    }
+    
+}
