@@ -1,10 +1,9 @@
 use crate::components::projects::Add_Project;
 use crate::contexts::modal_controller::use_modal_controller;
 use crate::utilities::set_displayed_theme;
-use chartcharm_shared::Project;
 use leptos::{
-    component, create_action, create_resource, create_rw_signal, event_target_value, tracing, view,
-    warn, For, IntoView, Scope, SignalGet, SignalSet,
+    component, create_action, create_rw_signal, event_target_value, tracing, view, warn, IntoView,
+    Scope, SignalGet, SignalSet,
 };
 use serde::Serialize;
 use tauri_sys::tauri;
@@ -18,8 +17,15 @@ pub struct AddProjectCmdArgs {
 }
 
 #[derive(Serialize)]
+pub struct EditProjectCmdArgs {
+    pub id: i32,
+    pub name: String,
+    pub description: String,
+}
+
+#[derive(Serialize)]
 pub struct DelProjectCmdArgs {
-    pub projectId: i32,
+    pub id: i32,
 }
 
 #[derive(Serialize)]

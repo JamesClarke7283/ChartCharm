@@ -60,7 +60,6 @@ async fn query_theme() -> Result<String, String> {
         }
     }
 }
-
 #[tauri::command]
 async fn list_projects() -> Result<Vec<Project>, String> {
     println!("list_projects function called");
@@ -77,10 +76,10 @@ async fn list_projects() -> Result<Vec<Project>, String> {
     }
 }
 #[tauri::command]
-async fn delete_project(project_id: i32) -> Result<(), String> {
+async fn delete_project(id: i32) -> Result<(), String> {
     println!("delete_project function called");
 
-    match models::delete_project(project_id).await {
+    match models::delete_project(id).await {
         Ok(_) => {
             println!("Deleted project");
             Ok(())
@@ -88,6 +87,21 @@ async fn delete_project(project_id: i32) -> Result<(), String> {
         Err(e) => {
             eprintln!("Failed to delete project: {}", e);
             Err(format!("Failed to delete project: {}", e))
+        }
+    }
+}
+
+#[tauri::command]
+async fn edit_project(id: i32, name: &str, description: &str) -> Result<(), String> {
+    println!("edit_project function called");
+    match models::edit_project(id, name, description).await {
+        Ok(_) => {
+            println!("Edited project");
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("Failed to edit project: {}", e);
+            Err(format!("Failed to edit project: {}", e))
         }
     }
 }
@@ -105,7 +119,8 @@ async fn main() {
             list_projects,
             update_theme,
             query_theme,
-            delete_project
+            delete_project,
+            edit_project
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

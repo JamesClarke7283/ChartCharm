@@ -1,4 +1,4 @@
-use crate::components::core::{AddProjectCmdArgs, DelProjectCmdArgs, UpdateThemeCmdArgs};
+use crate::components::core::{AddProjectCmdArgs, DelProjectCmdArgs, EditProjectCmdArgs};
 use crate::contexts::modal_controller::use_modal_controller;
 use chartcharm_shared::Project;
 use leptos::{
@@ -121,17 +121,23 @@ pub fn ProjectOptions<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
     println!("Project Options clicked");
     let modal = use_modal_controller(cx);
     let project_clone = project.clone();
+    let project_clone2 = project.clone();
     view! { cx,
         <div class="project-options">
-            <button class="icon-button">
-                <i class="fa fa-pencil" aria-hidden="true" on:click=move|_| {println!("Edit pressesd")}>Edit</i>
+            <button class="icon-button" on:click=move|_| {
+                println!("Edit pressesd");
+                let project_clone_for_closure = project_clone.clone();
+                modal.close();
+                modal.open(view!{cx, <Project_Edit project=&project_clone_for_closure/>});
+            }>
+                <i class="fa fa-pencil" aria-hidden="true">Edit</i>
             </button>
-            <button class="icon-button">
-                <i class="fa fa-trash" aria-hidden="true" on:click=move|_| {
-                    let project_clone_for_closure = project_clone.clone();
-                    modal.close();
-                    modal.open(view!{cx, <Project_Delete_Confirmation project=&project_clone_for_closure/>})
-                }>Delete</i>
+            <button class="icon-button" on:click=move|_| {
+                let project_clone_for_closure = project_clone2.clone();
+                modal.close();
+                modal.open(view!{cx, <Project_Delete_Confirmation project=&project_clone_for_closure/>})
+            }>
+                <i class="fa fa-trash" aria-hidden="true">Delete</i>
             </button>
         </div>
     }
@@ -143,16 +149,11 @@ pub fn Project_Delete_Confirmation<'a>(cx: Scope, project: &'a Project) -> impl 
     let modal = use_modal_controller(cx);
     let project_id = project.id.clone();
     let delete_project = create_action(cx, move |_: &()| async move {
-        tauri::invoke::<_, ()>(
-            "delete_project",
-            &DelProjectCmdArgs {
-                projectId: project_id,
-            },
-        )
-        .await
-        .unwrap_or_else(|e| {
-            warn!("Failed to call delete_Project: {}", e);
-        });
+        tauri::invoke::<_, ()>("delete_project", &DelProjectCmdArgs { id: project_id })
+            .await
+            .unwrap_or_else(|e| {
+                warn!("Failed to call delete_Project: {}", e);
+            });
     });
     view! { cx,
         <div id="project-delete-confirmation">
@@ -168,5 +169,50 @@ pub fn Project_Delete_Confirmation<'a>(cx: Scope, project: &'a Project) -> impl 
                 <i class="fa fa-times" aria-hidden="true">No</i>
             </button>
         </div>
+    }
+}
+
+#[component]
+pub fn Project_Edit<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
+    println!("Project Edit clicked");
+    let project_name = create_rw_signal(cx, String::new());
+    let project_description = create_rw_signal(cx, String::new());
+    let project_id = project.id.clone();
+
+    // Set initial state for form
+    project_name.set(project.name.clone());
+    project_description.set(project.description.clone());
+
+    let modal = use_modal_controller(cx);
+    let edit_project = create_action(cx, move |_: &()| async move {
+        tauri::invoke::<_, ()>(
+            "edit_project",
+            &EditProjectCmdArgs {
+                id: project_id,
+                name: project_name.get(),
+                description: project_description.get(),
+            },
+        )
+        .await
+        .unwrap_or_else(|e| {
+            warn!("Failed to call edit_project: {}", e);
+        });
+    });
+    view! { cx,
+        <form id="edit-project-form" on:submit=move|ev|{
+            ev.prevent_default();
+            edit_project.dispatch(());
+            modal.close();
+        }>
+            <label for="project-name">Project Name:</label>
+            <input type="text" id="project-name" name="project-name" on:input=move|ev|project_name.set(event_target_value(&ev)) prop:value=move||project_name.get() required />
+
+            <label for="project-description">Project Description:</label>
+            <textarea id="project-description" name="project-description" on:input=move|ev|project_description.set(event_target_value(&ev)) prop:value=move||project_description.get()></textarea>
+
+            <button type="submit">Save</button>
+            <button type="button" on:click=move|_|modal.close() {
+            }>Cancel</button>
+        </form>
     }
 }

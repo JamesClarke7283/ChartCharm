@@ -7,22 +7,21 @@ edition = "2021"
 
 [dependencies]
 leptos = { version = "0.4", features = ["csr"] }
-leptos_meta = {version = "0.4.10", features=["csr"]}
+leptos_meta = { version = "0.4.10", features = ["csr"] }
 console_log = "1.0"
 log = "0.4"
 console_error_panic_hook = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.5"
-wasm-bindgen = {version="0.2"}
-web-sys= {version = "0.3", features = ["Document","Element","Window"]}
+wasm-bindgen = { version = "0.2" }
+web-sys = { version = "0.3", features = ["Document", "Element", "Window"] }
 chartcharm_shared = { path = "../src-shared" }
-chartcharm_database = {path = "../src-db"}
 
 tauri-sys = { git = "https://github.com/JonasKruckenberg/tauri-sys", rev = "904450", features = [
   "all",
 ] }
 futures = "0.3"
-leptos_router = {version="0.4.10", features=["csr"]}
+leptos_router = { version = "0.4.10", features = ["csr"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"

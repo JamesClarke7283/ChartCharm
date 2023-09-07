@@ -129,7 +129,7 @@ pub async fn query_theme() -> Result<String, DbErr> {
     Ok(theme_name)
 }
 
-pub async fn delete_project(project_id: i32) -> Result<(), DbErr> {
+pub async fn delete_project(id: i32) -> Result<(), DbErr> {
     println!("delete_project function called");
 
     let conn = match get_connection().await {
@@ -142,13 +142,42 @@ pub async fn delete_project(project_id: i32) -> Result<(), DbErr> {
 
     println!("Got connection");
     // Delete the project with the id passed in
-    let project = match projects::Entity::find_by_id(project_id).one(&conn).await? {
+    let project = match projects::Entity::find_by_id(id).one(&conn).await? {
         Some(project) => project,
         None => {
-            println!("Project with id {project_id} not found");
+            println!("Project with id {id} not found");
             return Err(DbErr::Custom("Project not found".to_string()));
         }
     };
     project.delete(&conn).await?;
+    Ok(())
+}
+
+pub async fn edit_project(id: i32, name: &str, description: &str) -> Result<(), DbErr> {
+    println!("edit_project function called");
+
+    let conn = match get_connection().await {
+        Ok(conn) => conn,
+        Err(e) => {
+            println!("Failed to get database connection: {e:?}");
+            return Err(DbErr::Custom(e.to_string()));
+        }
+    };
+
+    println!("Got connection");
+
+    let project = match projects::Entity::find_by_id(id).one(&conn).await? {
+        Some(project) => project,
+        None => {
+            println!("Project with id {id} not found");
+            return Err(DbErr::Custom("Project not found".to_string()));
+        }
+    };
+
+    let mut project: projects::ActiveModel = project.into();
+    project.name = Set(name.to_string());
+    project.description = Set(description.to_string());
+    project.update(&conn).await?;
+
     Ok(())
 }
