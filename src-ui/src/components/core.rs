@@ -18,6 +18,11 @@ pub struct AddProjectCmdArgs {
 }
 
 #[derive(Serialize)]
+pub struct DelProjectCmdArgs {
+    pub projectId: i32,
+}
+
+#[derive(Serialize)]
 pub struct UpdateThemeCmdArgs {
     pub theme: String,
 }

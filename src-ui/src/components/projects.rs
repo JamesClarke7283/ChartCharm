@@ -1,4 +1,4 @@
-use crate::components::core::{AddProjectCmdArgs, UpdateThemeCmdArgs};
+use crate::components::core::{AddProjectCmdArgs, DelProjectCmdArgs, UpdateThemeCmdArgs};
 use crate::contexts::modal_controller::use_modal_controller;
 use chartcharm_shared::Project;
 use leptos::{
@@ -118,14 +118,54 @@ pub fn Project_Tile<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
 
 #[component]
 pub fn ProjectOptions<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
+    println!("Project Options clicked");
     let modal = use_modal_controller(cx);
+    let project_clone = project.clone();
     view! { cx,
         <div class="project-options">
             <button class="icon-button">
-                <i class="fa fa-pencil" aria-hidden="true">Edit</i>
+                <i class="fa fa-pencil" aria-hidden="true" on:click=move|_| {println!("Edit pressesd")}>Edit</i>
             </button>
             <button class="icon-button">
-                <i class="fa fa-trash" aria-hidden="true">Delete</i>
+                <i class="fa fa-trash" aria-hidden="true" on:click=move|_| {
+                    let project_clone_for_closure = project_clone.clone();
+                    modal.close();
+                    modal.open(view!{cx, <Project_Delete_Confirmation project=&project_clone_for_closure/>})
+                }>Delete</i>
+            </button>
+        </div>
+    }
+}
+
+#[component]
+pub fn Project_Delete_Confirmation<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
+    println!("Project Delete Confirmation clicked");
+    let modal = use_modal_controller(cx);
+    let project_id = project.id.clone();
+    let delete_project = create_action(cx, move |_: &()| async move {
+        tauri::invoke::<_, ()>(
+            "delete_project",
+            &DelProjectCmdArgs {
+                projectId: project_id,
+            },
+        )
+        .await
+        .unwrap_or_else(|e| {
+            warn!("Failed to call delete_Project: {}", e);
+        });
+    });
+    view! { cx,
+        <div id="project-delete-confirmation">
+            <p>Are you sure you want to delete this project?</p>
+            <button class="icon-button" on:click=move|__|{
+                println!("Deleting project");
+                delete_project.dispatch(());
+                modal.close();
+            }>
+                <i class="fa fa-check" aria-hidden="true">Yes</i>
+            </button>
+            <button class="icon-button" on:click=move|_|modal.close()>
+                <i class="fa fa-times" aria-hidden="true">No</i>
             </button>
         </div>
     }

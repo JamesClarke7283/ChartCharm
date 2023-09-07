@@ -76,6 +76,21 @@ async fn list_projects() -> Result<Vec<Project>, String> {
         }
     }
 }
+#[tauri::command]
+async fn delete_project(project_id: i32) -> Result<(), String> {
+    println!("delete_project function called");
+
+    match models::delete_project(project_id).await {
+        Ok(_) => {
+            println!("Deleted project");
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("Failed to delete project: {}", e);
+            Err(format!("Failed to delete project: {}", e))
+        }
+    }
+}
 
 #[async_std::main]
 async fn main() {
@@ -85,7 +100,13 @@ async fn main() {
     }
 
     Builder::default()
-        .invoke_handler(tauri::generate_handler![add_project, list_projects, update_theme, query_theme])
+        .invoke_handler(tauri::generate_handler![
+            add_project,
+            list_projects,
+            update_theme,
+            query_theme,
+            delete_project
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
