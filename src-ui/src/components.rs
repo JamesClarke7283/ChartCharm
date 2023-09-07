@@ -179,18 +179,18 @@ pub fn Add_Project(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-pub fn Project_Tile<'a>(cx: Scope, title: &'a str, description: &'a str) -> impl IntoView {
+pub fn Project_Tile<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
     view!(cx,
         <div class="project-tile">
         <button id="project-button">
             <div class="title-container">
-                <h1>{title.to_string()}</h1>
+                <h1>{project.name.to_string()}</h1>
                 <button class="icon-button">
                     <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                 </button>
             </div>
             <hr class="pico-divider"></hr>
-            <p>{description.to_string()}</p>
+            <p>{project.description.to_string()}</p>
             </button>
         </div>
         
@@ -222,7 +222,7 @@ pub fn ProjectList(cx: Scope) -> impl IntoView {
                 each=move || projects.read(cx).unwrap_or_default()
                 key=|project| project.id
                 view=move |cx, project: Project| {
-                    view!(cx, <Project_Tile title=&project.name description=&project.description />)
+                    view!(cx, <Project_Tile project=&project />)
                 }
             />
         </div>
