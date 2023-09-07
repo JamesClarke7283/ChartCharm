@@ -179,7 +179,7 @@ pub fn Add_Project(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-pub fn ProjectTile<'a>(cx: Scope, title: &'a str, description: &'a str) -> impl IntoView {
+pub fn Project_Tile<'a>(cx: Scope, title: &'a str, description: &'a str) -> impl IntoView {
     view!(cx,
         <div class="project-tile">
         <button id="project-button">
@@ -222,7 +222,7 @@ pub fn ProjectList(cx: Scope) -> impl IntoView {
                 each=move || projects.read(cx).unwrap_or_default()
                 key=|project| project.id
                 view=move |cx, project: Project| {
-                    view!(cx, <ProjectTile title=&project.name description=&project.description />)
+                    view!(cx, <Project_Tile title=&project.name description=&project.description />)
                 }
             />
         </div>
