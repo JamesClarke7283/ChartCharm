@@ -1,7 +1,7 @@
 use sea_orm::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
-#[sea_orm(table_name = "theme")]
+#[sea_orm(table_name = "chart_kind")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: u8,
@@ -11,11 +11,11 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::settings::Entity",
+        belongs_to = "super::charts::Entity",
         from = "Column::Id",
-        to = "super::settings::Column::ThemeSelected"
+        to = "super::charts::Column::Kind"
     )]
-    Settings,
+    Charts,
 }
 
 impl ActiveModelBehavior for ActiveModel {}

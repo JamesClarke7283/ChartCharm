@@ -34,6 +34,21 @@ enum Theme {
     Name,
 }
 
+#[derive(Iden)]
+enum ChartKind {
+    Table,
+    Id,
+    Name,
+}
+
+#[derive(Iden)]
+enum Charts {
+    Table,
+    Id,
+    Project,
+    Kind,
+}
+
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
@@ -117,6 +132,43 @@ impl MigrationTrait for Migration {
                     .clone(),
             )
             .await?;
+
+        // Create ChartKind table
+        manager
+            .create_table(
+                Table::create()
+                    .table(ChartKind::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(ChartKind::Id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(ColumnDef::new(ChartKind::Name).string().not_null())
+                    .clone(),
+            )
+            .await?;
+
+        // Create Charts table
+        manager
+            .create_table(
+                Table::create()
+                    .table(Charts::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(Charts::Id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(ColumnDef::new(Charts::Project).integer().not_null())
+                    .col(ColumnDef::new(Charts::Kind).integer().not_null())
+                    .clone(),
+            )
+            .await?;
         // Populate Theme table
         let populate_theme_stmt = Query::insert()
             .into_table(Theme::Table)
@@ -142,6 +194,16 @@ impl MigrationTrait for Migration {
             .clone();
 
         manager.exec_stmt(populate_settings_stmt).await?;
+
+        // Populate Chart Kind Table
+        let populate_chart_kind_stmt = Query::insert()
+            .into_table(ChartKind::Table)
+            .columns(vec![ChartKind::Name])
+            .values_panic(vec![SimpleExpr::Value(Value::String(Some(Box::new(
+                "line".to_owned(),
+            ))))])
+            .clone();
+        manager.exec_stmt(populate_chart_kind_stmt).await?;
 
         Ok(())
     }

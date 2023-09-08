@@ -34,7 +34,8 @@ pub fn ProjectList(cx: Scope, projects: Resource<(), Vec<Project>>) -> impl Into
         <div class="project-list">
             <For
                 each=move || {
-                    let cloned_projects = projects.read(cx).unwrap_or_default().clone();
+                    let mut cloned_projects = projects.read(cx).unwrap_or_default().clone();
+                    cloned_projects.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
                     cloned_projects.into_iter()
                 }
                 key=|project| project.id
