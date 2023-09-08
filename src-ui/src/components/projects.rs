@@ -6,7 +6,7 @@ use leptos::{
     request_animation_frame, tracing, view, warn, For, IntoView, Resource, Scope, SignalGet,
     SignalSet,
 };
-use leptos_router::use_navigate;
+use leptos_router::{use_navigate, NavigateOptions};
 use tauri_sys::tauri;
 
 // Header Component
@@ -150,7 +150,7 @@ pub fn Project_Tile<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
             let project_id = project_clone_for_closure.id.to_string();
             request_animation_frame(move || {
                 let navigate = leptos_router::use_navigate(cx);
-                _ = navigate(&format!("/project/{project_id}"), Default::default());
+                _ = navigate(&format!("/project/{project_id}"), NavigateOptions::default());
             });
         }>
             <div class="title-container">
