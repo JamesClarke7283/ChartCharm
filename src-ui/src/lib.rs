@@ -1,4 +1,4 @@
-use leptos::{component, create_action, provide_context, tracing, view, warn, IntoView, Scope};
+use leptos::{component, create_action, provide_context, tracing, view, warn, IntoView};
 use leptos_router::{Route, Router, Routes};
 pub mod components;
 pub mod contexts;
@@ -19,7 +19,7 @@ use tauri_sys::tauri;
 ///
 /// ## Parameters
 ///
-/// - `cx: Scope` - The scope of the component.
+/// - `` - The scope of the component.
 ///
 /// ## Returns
 ///
@@ -29,7 +29,7 @@ use tauri_sys::tauri;
 ///
 /// ```no_run
 /// // Initialize the App component
-/// App(cx);
+/// App();
 /// ```
 ///
 /// ## Dependencies
@@ -38,9 +38,9 @@ use tauri_sys::tauri;
 /// - `ModalViewer` for viewing modals.
 /// - `Header` for the header component.
 #[component]
-pub fn App(cx: Scope) -> impl IntoView {
+pub fn App() -> impl IntoView {
     // Create action to query theme
-    let init_theme = create_action(cx, move |_| async move {
+    let init_theme = create_action(move |_| async move {
         match tauri::invoke::<(), String>("query_theme", &()).await {
             Ok(retrieved_theme) => {
                 set_displayed_theme(&retrieved_theme); // Replace with your actual function to set theme
@@ -54,8 +54,8 @@ pub fn App(cx: Scope) -> impl IntoView {
     // Dispatch the action to query and set theme at startup
     init_theme.dispatch(&());
 
-    provide_context(cx, ModalController::new(cx));
-    view! { cx,
+    provide_context(ModalController::new());
+    view! {
         <Router>
         <ModalViewer/>
         <main>

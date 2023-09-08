@@ -5,20 +5,20 @@ use crate::contexts::modal_controller::use_modal_controller;
 use chrono::Utc;
 use leptos::{
     component, create_resource, create_rw_signal, event_target_value, tracing, view, warn,
-    IntoView, Params, Scope, SignalGet, SignalSet, SignalWith,
+    IntoView, Params, SignalGet, SignalSet, SignalWith,
 };
 use leptos_router::*;
 use tauri_sys::tauri;
 
 #[component]
-pub fn ProjectHeader<'a>(cx: Scope, project: &'a chartcharm_shared::Project) -> impl IntoView {
-    let modal = use_modal_controller(cx);
+pub fn ProjectHeader<'a>(project: &'a chartcharm_shared::Project) -> impl IntoView {
+    let modal = use_modal_controller();
     let project = project.clone();
-    view! {cx,
+    view! {
         <header id="header" class="pico-container pico-bg-primary foreground-widget">
         // Burger Menu Icon
         <div id="header-burger-menu-container" class="transparent-action">
-            <button class="pico-btn pico-btn-icon" id="header-burger-menu-button" on:click=move|_|modal.open(view!{cx, <Sidebar/>})>
+            <button class="pico-btn pico-btn-icon" id="header-burger-menu-button" on:click=move|_|modal.open(view!{ <Sidebar/>})>
                 <i class="fa fa-bars" aria-hidden="true"></i>
             </button>
         </div>
@@ -42,7 +42,7 @@ pub fn ProjectHeader<'a>(cx: Scope, project: &'a chartcharm_shared::Project) -> 
 
             // Plus Icon
             /*
-            <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{cx, <Add_Project/>})>
+            <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{ <Add_Project/>})>
                 <i class="fa fa-plus" aria-hidden="true"></i>
             </button>
             */
@@ -53,13 +53,12 @@ pub fn ProjectHeader<'a>(cx: Scope, project: &'a chartcharm_shared::Project) -> 
 }
 
 #[component]
-pub fn Project(cx: Scope) -> impl IntoView {
-    let params = use_params_map(cx);
-    let modal = use_modal_controller(cx);
+pub fn Project() -> impl IntoView {
+    let params = use_params_map();
+    let modal = use_modal_controller();
     let id = move || params.with(|params| params.get("id").cloned());
     let id = id().unwrap().parse::<u16>().unwrap();
     let query_project = create_resource(
-        cx,
         || {},
         move |_| async move {
             let retrieved_project =
@@ -79,9 +78,9 @@ pub fn Project(cx: Scope) -> impl IntoView {
             retrieved_project
         },
     );
-    let project = query_project.read(cx).unwrap().clone();
+    let project = query_project.read().unwrap().clone();
 
-    view! {cx,
+    view! {
         <ProjectHeader project=&project />
     }
 }

@@ -3,7 +3,7 @@ use crate::contexts::modal_controller::use_modal_controller;
 use crate::utilities::set_displayed_theme;
 use leptos::{
     component, create_action, create_rw_signal, event_target_value, tracing, view, warn, IntoView,
-    Scope, SignalGet, SignalSet,
+    SignalGet, SignalSet,
 };
 use serde::Serialize;
 use tauri_sys::tauri;
@@ -40,11 +40,11 @@ pub struct QueryChartCmdArgs {
 
 // Sidebar Component
 #[component]
-pub fn Sidebar(cx: Scope) -> impl IntoView {
-    let modal = use_modal_controller(cx);
-    let theme = create_rw_signal(cx, String::new());
+pub fn Sidebar() -> impl IntoView {
+    let modal = use_modal_controller();
+    let theme = create_rw_signal(String::new());
 
-    let query_theme = create_action(cx, move |_| async move {
+    let query_theme = create_action(move |_| async move {
         match tauri::invoke::<(), String>("query_theme", &()).await {
             Ok(retrieved_theme) => {
                 theme.set(retrieved_theme.clone());
@@ -66,7 +66,7 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
 
     query_theme.dispatch(&());
 
-    let update_theme = create_action(cx, move |_| async move {
+    let update_theme = create_action(move |_| async move {
         match tauri::invoke::<UpdateThemeCmdArgs, ()>(
             "update_theme",
             &UpdateThemeCmdArgs { theme: theme.get() },
@@ -82,7 +82,7 @@ pub fn Sidebar(cx: Scope) -> impl IntoView {
         }
     });
 
-    view! { cx,
+    view! {
         <h1>Chart Charm</h1>
         <hr class="pico-divider"></hr>
         <ul class="sidebar-menu">

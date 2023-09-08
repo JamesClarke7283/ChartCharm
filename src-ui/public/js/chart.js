@@ -4869,7 +4869,7 @@ class Scale extends Element {
 }
 
 class TypedRegistry {
-    constructor(type, scope, override){
+    constructor(type,  override){
         this.type = type;
         this.scope = scope;
         this.override = override;
@@ -4894,7 +4894,7 @@ class TypedRegistry {
             return scope;
         }
         items[id] = item;
-        registerDefaults(item, scope, parentScope);
+        registerDefaults(item,  parentScope);
         if (this.override) {
             defaults.override(item.id, item.overrides);
         }
@@ -4918,21 +4918,21 @@ class TypedRegistry {
         }
     }
 }
-function registerDefaults(item, scope, parentScope) {
+function registerDefaults(item,  parentScope) {
     const itemDefaults = merge(Object.create(null), [
         parentScope ? defaults.get(parentScope) : {},
         defaults.get(scope),
         item.defaults
     ]);
-    defaults.set(scope, itemDefaults);
+    defaults.set( itemDefaults);
     if (item.defaultRoutes) {
-        routeDefaults(scope, item.defaultRoutes);
+        routeDefaults( item.defaultRoutes);
     }
     if (item.descriptors) {
-        defaults.describe(scope, item.descriptors);
+        defaults.describe( item.descriptors);
     }
 }
-function routeDefaults(scope, routes) {
+function routeDefaults( routes) {
     Object.keys(routes).forEach((property)=>{
         const propertyParts = property.split('.');
         const sourceName = propertyParts.pop();
@@ -4942,7 +4942,7 @@ function routeDefaults(scope, routes) {
         const parts = routes[property].split('.');
         const targetName = parts.pop();
         const targetScope = parts.join('.');
-        defaults.route(sourceScope, sourceName, targetScope, targetName);
+        defaults.route(source sourceName, target targetName);
     });
 }
 function isIChartComponent(proto) {
@@ -5392,18 +5392,18 @@ class Config {
                 ]
             ]);
     }
- _cachedScopes(mainScope, resetCache) {
+ _cachedScopes(main resetCache) {
         const _scopeCache = this._scopeCache;
         let cache = _scopeCache.get(mainScope);
         if (!cache || resetCache) {
             cache = new Map();
-            _scopeCache.set(mainScope, cache);
+            _scopeCache.set(main cache);
         }
         return cache;
     }
- getOptionScopes(mainScope, keyLists, resetCache) {
+ getOptionScopes(main keyLists, resetCache) {
         const { options , type  } = this;
-        const cache = this._cachedScopes(mainScope, resetCache);
+        const cache = this._cachedScopes(main resetCache);
         const cached = cache.get(keyLists);
         if (cached) {
             return cached;
@@ -5412,7 +5412,7 @@ class Config {
         keyLists.forEach((keys)=>{
             if (mainScope) {
                 scopes.add(mainScope);
-                keys.forEach((key)=>addIfFound(scopes, mainScope, key));
+                keys.forEach((key)=>addIfFound(scopes, main key));
             }
             keys.forEach((key)=>addIfFound(scopes, options, key));
             keys.forEach((key)=>addIfFound(scopes, overrides[type] || {}, key));
