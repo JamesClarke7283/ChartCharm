@@ -105,7 +105,7 @@ pub fn Project_Tile<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
                 <h1>{project.name.to_string()}</h1>
                 <button class="icon-button" on:click=move|_| {
                     let project_clone_for_closure = project_clone.clone(); // Clone it again for the closure
-                    modal.open(view!{cx, <ProjectOptions project=&project_clone_for_closure/>})
+                    modal.open(view!{cx, <Project_Options project=&project_clone_for_closure/>})
                 }>
                     <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                 </button>
@@ -118,7 +118,7 @@ pub fn Project_Tile<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
 }
 
 #[component]
-pub fn ProjectOptions<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
+pub fn Project_Options<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
     println!("Project Options clicked");
     let modal = use_modal_controller(cx);
     let project_clone = project.clone();

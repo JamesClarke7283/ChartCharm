@@ -4,9 +4,13 @@ use sea_orm::prelude::*;
 #[sea_orm(table_name = "charts")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
-    pub project: i32,
-    pub kind: i8,
+    pub id: u16,
+    pub name: String,
+    pub description: String,
+    pub project: u16,
+    pub kind: u8,
+    pub created_at: chrono::DateTime<Utc>,
+    pub updated_at: chrono::DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

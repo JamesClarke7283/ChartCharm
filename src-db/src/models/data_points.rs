@@ -4,8 +4,8 @@ use sea_orm::prelude::*;
 #[sea_orm(table_name = "data_points")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
-    pub project: i32,
+    pub id: u64,
+    pub project: u16,
     pub data: f64,
     pub created_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,

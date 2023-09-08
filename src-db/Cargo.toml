@@ -6,9 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# Rustqlite from github
-# https://github.com/kawasin73/prsqlite/
-sea-orm = { version = "0.12", features = ["sqlx-sqlite", "macros", "runtime-async-std", "with-chrono"] }
+sea-orm = { version = "0.12", features = [
+    "sqlx-sqlite",
+    "macros",
+    "runtime-async-std",
+    "with-chrono",
+] }
 dirs = "5"
 async-std = { version = "1", features = ["attributes"] }
 chrono = "0.4"

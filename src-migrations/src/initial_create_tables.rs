@@ -45,8 +45,12 @@ enum ChartKind {
 enum Charts {
     Table,
     Id,
+    Name,
+    Description,
     Project,
     Kind,
+    CreatedAt,
+    UpdatedAt,
 }
 
 #[derive(DeriveMigrationName)]
@@ -164,8 +168,12 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
+                    .col(ColumnDef::new(Charts::Name).string().not_null())
+                    .col(ColumnDef::new(Charts::Description).string().not_null())
                     .col(ColumnDef::new(Charts::Project).integer().not_null())
                     .col(ColumnDef::new(Charts::Kind).integer().not_null())
+                    .col(ColumnDef::new(Charts::CreatedAt).timestamp().not_null())
+                    .col(ColumnDef::new(Charts::UpdatedAt).timestamp().not_null())
                     .clone(),
             )
             .await?;

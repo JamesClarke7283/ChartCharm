@@ -1,5 +1,5 @@
 use crate::get_connection;
-use crate::models::{projects, settings, theme};
+use crate::models::projects;
 use chartcharm_shared::Project;
 use chrono::Utc;
 use sea_orm::entity::prelude::*;
@@ -70,7 +70,7 @@ pub async fn list_projects() -> Result<Vec<Project>, DbErr> {
     Ok(new_projects)
 }
 
-pub async fn delete_project(id: i32) -> Result<(), DbErr> {
+pub async fn delete_project(id: u16) -> Result<(), DbErr> {
     println!("delete_project function called");
 
     let conn = match get_connection().await {
@@ -94,7 +94,7 @@ pub async fn delete_project(id: i32) -> Result<(), DbErr> {
     Ok(())
 }
 
-pub async fn edit_project(id: i32, name: &str, description: &str) -> Result<(), DbErr> {
+pub async fn edit_project(id: u16, name: &str, description: &str) -> Result<(), DbErr> {
     println!("edit_project function called");
 
     let conn = match get_connection().await {

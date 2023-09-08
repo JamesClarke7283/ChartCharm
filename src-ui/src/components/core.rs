@@ -18,14 +18,14 @@ pub struct AddProjectCmdArgs {
 
 #[derive(Serialize)]
 pub struct EditProjectCmdArgs {
-    pub id: i32,
+    pub id: u16,
     pub name: String,
     pub description: String,
 }
 
 #[derive(Serialize)]
 pub struct DelProjectCmdArgs {
-    pub id: i32,
+    pub id: u16,
 }
 
 #[derive(Serialize)]

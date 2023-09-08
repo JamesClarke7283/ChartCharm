@@ -76,7 +76,7 @@ async fn list_projects() -> Result<Vec<Project>, String> {
     }
 }
 #[tauri::command]
-async fn delete_project(id: i32) -> Result<(), String> {
+async fn delete_project(id: u16) -> Result<(), String> {
     println!("delete_project function called");
 
     match projects::delete_project(id).await {
@@ -92,7 +92,7 @@ async fn delete_project(id: i32) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn edit_project(id: i32, name: &str, description: &str) -> Result<(), String> {
+async fn edit_project(id: u16, name: &str, description: &str) -> Result<(), String> {
     println!("edit_project function called");
     match projects::edit_project(id, name, description).await {
         Ok(_) => {
