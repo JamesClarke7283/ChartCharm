@@ -3,9 +3,9 @@ use leptos_router::{Route, Router, Routes};
 pub mod components;
 pub mod contexts;
 pub mod utilities;
+use crate::components::project::Project;
 use crate::utilities::set_displayed_theme;
-use components::core::Header;
-use components::projects::Projects;
+use components::projects::{Project_Header, Projects};
 use contexts::modal_controller::{ModalController, ModalViewer};
 use tauri_sys::tauri;
 
@@ -58,11 +58,11 @@ pub fn App(cx: Scope) -> impl IntoView {
     view! { cx,
         <Router>
         <ModalViewer/>
-        <Header />
         <main>
             <div id="route-view">
             <Routes>
             <Route path="/" view=Projects/>
+            <Route path="/project/:id" view=Project/>
             </Routes>
             </div>
             </main>

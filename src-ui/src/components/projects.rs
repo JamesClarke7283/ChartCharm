@@ -1,11 +1,52 @@
-use crate::components::core::{AddProjectCmdArgs, DelProjectCmdArgs, EditProjectCmdArgs};
+use crate::components::core::{AddProjectCmdArgs, DelProjectCmdArgs, EditProjectCmdArgs, Sidebar};
 use crate::contexts::modal_controller::use_modal_controller;
 use chartcharm_shared::Project;
 use leptos::{
-    component, create_action, create_resource, create_rw_signal, event_target_value, tracing, view,
-    warn, For, IntoView, Resource, Scope, SignalGet, SignalSet,
+    component, create_action, create_resource, create_rw_signal, event_target_value,
+    request_animation_frame, tracing, view, warn, For, IntoView, Resource, Scope, SignalGet,
+    SignalSet,
 };
+use leptos_router::use_navigate;
 use tauri_sys::tauri;
+
+// Header Component
+#[component]
+pub fn Project_Header(cx: Scope) -> impl IntoView {
+    let modal = use_modal_controller(cx);
+    view! { cx,
+        <header id="header" class="pico-container pico-bg-primary foreground-widget">
+            // Burger Menu Icon
+            <div id="header-burger-menu-container" class="transparent-action">
+                <button class="pico-btn pico-btn-icon" id="header-burger-menu-button" on:click=move|_|modal.open(view!{cx, <Sidebar/>})>
+                    <i class="fa fa-bars" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            // App Name: Chart Charm
+            <div id="header-text-container">
+                <h1 class="pico-h3 pico-mb-0">"Chart Charm"</h1>
+            </div>
+
+            // Icons: Import, Export, and Plus
+            <div id="header-actions-container" class="transparent-action">
+                // Import Icon
+                <button class="pico-btn pico-btn-icon" id="header-import-data-button">
+                    <i class="fa fa-upload" aria-hidden="true"></i>
+                </button>
+
+                // Export Icon
+                <button class="pico-btn pico-btn-icon" id="header-export-data-button">
+                    <i class="fa fa-download" aria-hidden="true"></i>
+                </button>
+
+                // Plus Icon
+                <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{cx, <Add_Project/>})>
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                </button>
+            </div>
+        </header>
+    }
+}
 
 #[component]
 pub fn Projects(cx: Scope) -> impl IntoView {
@@ -24,7 +65,10 @@ pub fn Projects(cx: Scope) -> impl IntoView {
         },
     );
 
-    view!(cx, <ProjectList projects=projects />)
+    view! {cx,
+        <Project_Header />
+        <ProjectList projects=projects />
+    }
 }
 
 #[component]
@@ -97,14 +141,22 @@ pub fn Add_Project(cx: Scope) -> impl IntoView {
 pub fn Project_Tile<'a>(cx: Scope, project: &'a Project) -> impl IntoView {
     let modal = use_modal_controller(cx);
     let project_clone = project.clone(); // Clone the Project here
+    let project_clone2 = project.clone(); // Clone the Project here
 
     view!(cx,
         <div class="project-tile">
-        <button id="project-button">
+        <button id="project-button" on:click=move|_| {
+            let project_clone_for_closure = project_clone.clone();
+            let project_id = project_clone_for_closure.id.to_string();
+            request_animation_frame(move || {
+                let navigate = leptos_router::use_navigate(cx);
+                _ = navigate(&format!("/project/{project_id}"), Default::default());
+            });
+        }>
             <div class="title-container">
                 <h1>{project.name.to_string()}</h1>
                 <button class="icon-button" on:click=move|_| {
-                    let project_clone_for_closure = project_clone.clone(); // Clone it again for the closure
+                    let project_clone_for_closure = project_clone2.clone();
                     modal.open(view!{cx, <Project_Options project=&project_clone_for_closure/>})
                 }>
                     <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
