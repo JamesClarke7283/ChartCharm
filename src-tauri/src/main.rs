@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use chartcharm_database::models;
+use chartcharm_database::bindings::{projects, settings};
 use chartcharm_shared::Project;
 use tauri::Builder;
 
@@ -17,7 +17,7 @@ async fn add_project(name: &str, description: &str) -> Result<(), String> {
         name, description
     );
 
-    match models::add_project(&name, &description).await {
+    match projects::add_project(&name, &description).await {
         Ok(_) => {
             println!("Successfully added project");
             Ok(())
@@ -35,7 +35,7 @@ async fn update_theme(theme: &str) -> Result<(), String> {
 
     println!("Updated theme to '{}'", theme);
 
-    match models::update_theme(&theme).await {
+    match settings::update_theme(&theme).await {
         Ok(_) => {
             println!("Successfully updated theme");
             Ok(())
@@ -49,7 +49,7 @@ async fn update_theme(theme: &str) -> Result<(), String> {
 
 #[tauri::command]
 async fn query_theme() -> Result<String, String> {
-    match models::query_theme().await {
+    match settings::query_theme().await {
         Ok(theme) => {
             println!("Retrieved theme");
             Ok(theme)
@@ -64,7 +64,7 @@ async fn query_theme() -> Result<String, String> {
 async fn list_projects() -> Result<Vec<Project>, String> {
     println!("list_projects function called");
 
-    match models::list_projects().await {
+    match projects::list_projects().await {
         Ok(projects) => {
             println!("Retrieved projects");
             Ok(projects)
@@ -79,7 +79,7 @@ async fn list_projects() -> Result<Vec<Project>, String> {
 async fn delete_project(id: i32) -> Result<(), String> {
     println!("delete_project function called");
 
-    match models::delete_project(id).await {
+    match projects::delete_project(id).await {
         Ok(_) => {
             println!("Deleted project");
             Ok(())
@@ -94,7 +94,7 @@ async fn delete_project(id: i32) -> Result<(), String> {
 #[tauri::command]
 async fn edit_project(id: i32, name: &str, description: &str) -> Result<(), String> {
     println!("edit_project function called");
-    match models::edit_project(id, name, description).await {
+    match projects::edit_project(id, name, description).await {
         Ok(_) => {
             println!("Edited project");
             Ok(())

@@ -1,5 +1,6 @@
 use sea_orm::Database;
 use sea_orm::DatabaseConnection;
+pub mod bindings;
 pub mod models;
 use chartcharm_database_migration::{Migrator, MigratorTrait};
 use dirs::config_dir;
