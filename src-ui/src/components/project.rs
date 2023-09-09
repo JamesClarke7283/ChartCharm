@@ -9,7 +9,7 @@ use log::info;
 use tauri_sys::tauri;
 
 #[component]
-pub fn ProjectHeader<'a>(project: &'a chartcharm_shared::Project) -> impl IntoView {
+pub fn ProjectHeader<'a>(project: &'a chartcharm_shared::project::Project) -> impl IntoView {
     let modal = use_modal_controller();
     let project = project.clone();
     view! {
@@ -70,7 +70,7 @@ pub fn Project() -> impl IntoView {
                     }
                     Err(e) => {
                         warn!("Failed to call list_projects: {}", e);
-                        return chartcharm_shared::Project {
+                        return chartcharm_shared::project::Project {
                             id: 0,
                             name: String::new(),
                             description: String::new(),

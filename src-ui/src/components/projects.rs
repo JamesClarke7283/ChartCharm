@@ -1,6 +1,6 @@
 use crate::components::core::{AddProjectCmdArgs, DelProjectCmdArgs, EditProjectCmdArgs, Sidebar};
 use crate::contexts::modal_controller::use_modal_controller;
-use chartcharm_shared::Project;
+use chartcharm_shared::project::Project;
 use leptos::{
     component, create_action, create_resource, create_rw_signal, event_target_value,
     request_animation_frame, tracing, view, warn, For, IntoView, Resource, SignalGet, SignalSet,
@@ -38,7 +38,7 @@ pub fn Project_Header() -> impl IntoView {
                 </button>
 
                 // Plus Icon
-                <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{ <Add_Project/>})>
+                <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{ <AddProject/>})>
                     <i class="fa fa-plus" aria-hidden="true"></i>
                 </button>
             </div>
@@ -98,7 +98,7 @@ pub fn ProjectList(projects: Resource<(), Vec<Project>>) -> impl IntoView {
 ///
 /// - `` - The scope of the component.
 #[component]
-pub fn Add_Project() -> impl IntoView {
+pub fn AddProject() -> impl IntoView {
     let modal = use_modal_controller();
     let project_name = create_rw_signal(String::new());
     let project_description = create_rw_signal(String::new());
