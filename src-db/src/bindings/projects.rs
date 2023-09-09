@@ -123,3 +123,32 @@ pub async fn edit_project(id: u16, name: &str, description: &str) -> Result<(), 
 
     Ok(())
 }
+
+pub async fn query_project(id: u16) -> Result<Project, DbErr> {
+    println!("query_project function called");
+
+    let conn = match get_connection().await {
+        Ok(conn) => conn,
+        Err(e) => {
+            println!("Failed to get database connection: {e:?}");
+            return Err(DbErr::Custom(e.to_string()));
+        }
+    };
+
+    println!("Got connection");
+
+    let project = match projects::Entity::find_by_id(id).one(&conn).await? {
+        Some(project) => project,
+        None => {
+            println!("Project with id {id} not found");
+            return Err(DbErr::Custom("Project not found".to_string()));
+        }
+    };
+    Ok(Project {
+        id: project.id,
+        name: project.name,
+        description: project.description,
+        created_at: project.created_at,
+        updated_at: project.updated_at,
+    })
+}

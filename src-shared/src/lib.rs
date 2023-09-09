@@ -1,5 +1,12 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
+
+#[derive(Debug, Error, Serialize)]
+pub enum ProjectError {
+    #[error("Failed to retrieve project: {0}")]
+    RetrieveError(String),
+}
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Project {

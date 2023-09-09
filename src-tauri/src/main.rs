@@ -4,7 +4,9 @@
 )]
 pub mod bindings;
 use crate::bindings::charts::{add_chart, delete_chart, list_charts, update_chart};
-use crate::bindings::projects::{add_project, delete_project, edit_project, list_projects};
+use crate::bindings::projects::{
+    add_project, delete_project, edit_project, list_projects, query_project,
+};
 use crate::bindings::settings::{query_theme, update_theme};
 use tauri::Builder;
 
@@ -23,6 +25,7 @@ async fn main() {
             query_theme,
             delete_project,
             edit_project,
+            query_project,
             add_chart,
             delete_chart,
             list_charts,

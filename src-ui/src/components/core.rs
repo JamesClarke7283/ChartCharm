@@ -34,7 +34,7 @@ pub struct UpdateThemeCmdArgs {
 }
 
 #[derive(Serialize)]
-pub struct QueryChartCmdArgs {
+pub struct QueryProjectCmdArgs {
     pub id: u16,
 }
 

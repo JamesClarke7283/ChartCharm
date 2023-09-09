@@ -1,5 +1,5 @@
 use chartcharm_database::bindings::projects;
-use chartcharm_shared::Project;
+use chartcharm_shared::{Project, ProjectError};
 
 #[tauri::command]
 pub async fn add_project(name: &str, description: &str) -> Result<(), String> {
@@ -65,6 +65,21 @@ pub async fn edit_project(id: u16, name: &str, description: &str) -> Result<(), 
         Err(e) => {
             eprintln!("Failed to edit project: {}", e);
             Err(format!("Failed to edit project: {}", e))
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn query_project(id: u16) -> Result<Project, ProjectError> {
+    println!("query_project function called");
+    match projects::query_project(id).await {
+        Ok(project) => {
+            println!("Retrieved project");
+            Ok(project)
+        }
+        Err(e) => {
+            eprintln!("Failed to retrieve project: {}", e);
+            Err(ProjectError::RetrieveError(e.to_string()))
         }
     }
 }

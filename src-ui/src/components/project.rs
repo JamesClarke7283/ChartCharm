@@ -1,11 +1,12 @@
 use std::process::id;
 
-use crate::components::core::{QueryChartCmdArgs, Sidebar};
+use crate::components::core::{QueryProjectCmdArgs, Sidebar};
 use crate::contexts::modal_controller::use_modal_controller;
+use chartcharm_shared::{Project, ProjectError};
 use chrono::Utc;
 use leptos::{
-    component, create_resource, create_rw_signal, event_target_value, tracing, view, warn,
-    IntoView, Params, SignalGet, SignalSet, SignalWith,
+    component, create_effect, create_resource, create_rw_signal, event_target_value, spawn_local,
+    tracing, view, warn, IntoView, Params, SignalGet, SignalSet, SignalWith,
 };
 use leptos_router::*;
 use tauri_sys::tauri;
@@ -57,30 +58,32 @@ pub fn Project() -> impl IntoView {
     let params = use_params_map();
     let modal = use_modal_controller();
     let id = move || params.with(|params| params.get("id").cloned());
-    let id = id().unwrap().parse::<u16>().unwrap();
-    let query_project = create_resource(
-        || {},
-        move |_| async move {
-            let retrieved_project =
-                match tauri::invoke("query_project", &QueryChartCmdArgs { id: id }).await {
-                    Ok(projects) => projects,
-                    Err(e) => {
-                        warn!("Failed to call list_projects: {}", e);
-                        return chartcharm_shared::Project {
-                            id: 0,
-                            name: String::new(),
-                            description: String::new(),
-                            created_at: Utc::now(),
-                            updated_at: Utc::now(),
-                        };
-                    }
-                };
-            retrieved_project
-        },
-    );
-    let project = query_project.read().unwrap().clone();
+
+    let id_str = id().unwrap_or_else(|| "0".to_string());
+    let id = id_str.parse::<u16>().unwrap_or(0); // replace unwrap with proper error handling
+
+    let project = create_rw_signal(chartcharm_shared::Project {
+        id: 0,
+        name: String::new(),
+        description: String::new(),
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
+    });
+
+    spawn_local(async move {
+        let result: Result<Project, _> =
+            tauri::invoke("query_project", &QueryProjectCmdArgs { id }).await;
+        match result {
+            Ok(proj) => {
+                project.set(proj);
+            }
+            Err(e) => {
+                warn!("Failed to call list_projects: {}", e);
+            }
+        }
+    });
 
     view! {
-        <ProjectHeader project=&project />
+        <ProjectHeader project=&project.get() />
     }
 }

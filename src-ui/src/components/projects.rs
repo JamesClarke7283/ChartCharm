@@ -76,7 +76,7 @@ pub fn ProjectList(projects: Resource<(), Vec<Project>>) -> impl IntoView {
         <div class="project-list">
             <For
                 each=move || {
-                    let mut cloned_projects = projects.read().unwrap_or_default().clone();
+                    let mut cloned_projects = projects.get().unwrap_or_default().clone();
                     cloned_projects.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
                     cloned_projects.into_iter()
                 }
@@ -148,7 +148,7 @@ pub fn Project_Tile<'a>(project: &'a Project) -> impl IntoView {
             let project_id = project_clone_for_closure.id.to_string();
             request_animation_frame(move || {
                 let navigate = leptos_router::use_navigate();
-                _ = navigate(&format!("/project/{project_id}"), NavigateOptions::default());
+                _ = navigate(&format!("project/{}", project_id.clone()), Default::default());
             });
         }>
             <div class="title-container">
@@ -181,14 +181,14 @@ pub fn Project_Options<'a>(project: &'a Project) -> impl IntoView {
                 modal.close();
                 modal.open(view!{ <Project_Edit project=&project_clone_for_closure/>});
             }>
-                <i class="fa fa-pencil" aria-hidden="true">Edit</i>
+                <i class="fa fa-pencil" aria-hidden="true"> Edit</i>
             </button>
             <button class="icon-button" on:click=move|_| {
                 let project_clone_for_closure = project_clone2.clone();
                 modal.close();
                 modal.open(view!{ <Project_Delete_Confirmation project=&project_clone_for_closure/>})
             }>
-                <i class="fa fa-trash" aria-hidden="true">Delete</i>
+                <i class="fa fa-trash" aria-hidden="true"> Delete</i>
             </button>
         </div>
     }

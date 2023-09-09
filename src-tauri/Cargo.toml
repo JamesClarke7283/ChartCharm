@@ -20,6 +20,7 @@ tauri = { version = "1.1", features = ["api-all"] }
 chartcharm_database = { path = "../src-db" }
 chartcharm_shared = { path = "../src-shared" }
 async-std = { version = "1.12", features = ["attributes", "unstable"] }
+thiserror = "1.0"
 
 [features]
 # by default Tauri runs in production mode
