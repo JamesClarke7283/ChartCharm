@@ -1,6 +1,6 @@
 use chartcharm_database::get_connection;
 use chartcharm_database::models::{settings, theme};
-use chartcharm_shared::SettingsError;
+use chartcharm_shared::settings::SettingsError;
 use sea_orm::entity::prelude::*;
 use sea_orm::{IntoActiveModel, Set};
 

@@ -9,7 +9,7 @@ use log::info;
 use tauri_sys::tauri;
 
 #[component]
-pub fn ProjectHeader<'poo>(project: &'poo chartcharm_shared::Project) -> impl IntoView {
+pub fn ProjectHeader<'a>(project: &'a chartcharm_shared::Project) -> impl IntoView {
     let modal = use_modal_controller();
     let project = project.clone();
     view! {
@@ -39,11 +39,11 @@ pub fn ProjectHeader<'poo>(project: &'poo chartcharm_shared::Project) -> impl In
             </button>
 
             // Plus Icon
-            /*
-            <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{ <Add_Project/>})>
-                <i class="fa fa-plus" aria-hidden="true"></i>
+
+            <button class="pico-btn pico-btn-icon" id="header-add-data-button" on:click=move|_|modal.open(view!{ <EditDatapoints project_id=project.id/>})>
+                <i class="fa fa-pencil" aria-hidden="true"></i>
             </button>
-            */
+
         </div>
     </header>
 
@@ -94,5 +94,17 @@ pub fn Project() -> impl IntoView {
         }
     }
     </Suspense>
+    }
+}
+
+#[component]
+pub fn EditDatapoints(project_id: u16) -> impl IntoView {
+    let modal = use_modal_controller();
+    view! {
+        <div id="edit-datapoints-modal" class="modal">
+            <div class="modal-content">
+            <p>{"Edit Datapoints"}</p>
+            </div>
+        </div>
     }
 }

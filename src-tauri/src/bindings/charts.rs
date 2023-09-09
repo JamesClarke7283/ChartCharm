@@ -1,7 +1,7 @@
 use chartcharm_database::get_connection;
 use chartcharm_database::models::charts;
-use chartcharm_shared::Chart;
-use chartcharm_shared::ChartError;
+use chartcharm_shared::chart::Chart;
+use chartcharm_shared::chart::ChartError;
 use chrono::Utc;
 use sea_orm::entity::prelude::*;
 use sea_orm::Set;

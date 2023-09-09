@@ -1,6 +1,6 @@
 use chartcharm_database::get_connection;
 use chartcharm_database::models::projects;
-use chartcharm_shared::{Project, ProjectError};
+use chartcharm_shared::project::{Project, ProjectError};
 use chrono::Utc;
 use sea_orm::entity::prelude::*;
 use sea_orm::Set;
