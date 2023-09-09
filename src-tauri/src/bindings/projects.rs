@@ -114,14 +114,13 @@ pub async fn delete_project(id: u16) -> Result<(), ProjectError> {
     match project.delete(&conn).await {
         Ok(project) => {
             println!("Deleted project: {project:?}");
-            Ok(())
+            return Ok(());
         }
         Err(e) => {
             println!("Failed to delete project: {e:?}");
-            Err(ProjectError::DeleteError(e.to_string()))
+            return Err(ProjectError::DeleteError(e.to_string()));
         }
     };
-    Ok(())
 }
 
 #[tauri::command]
