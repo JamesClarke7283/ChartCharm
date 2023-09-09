@@ -1,11 +1,9 @@
-use crate::components::projects::Add_Project;
 use crate::contexts::modal_controller::use_modal_controller;
 use crate::utilities::set_displayed_theme;
 use leptos::{
     component, create_action, create_rw_signal, event_target_value, request_animation_frame,
     tracing, view, warn, IntoView, SignalGet, SignalSet,
 };
-use leptos_router::use_navigate;
 use serde::Serialize;
 use tauri_sys::tauri;
 use wasm_bindgen::JsCast;

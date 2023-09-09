@@ -5,7 +5,6 @@ use leptos::{
     component, create_action, create_resource, create_rw_signal, event_target_value,
     request_animation_frame, tracing, view, warn, For, IntoView, Resource, SignalGet, SignalSet,
 };
-use leptos_router::{use_navigate, NavigateOptions};
 use tauri_sys::tauri;
 
 // Header Component
@@ -82,7 +81,7 @@ pub fn ProjectList(projects: Resource<(), Vec<Project>>) -> impl IntoView {
                 }
                 key=|project| project.id
                 view=move | project: Project| {
-                    view!( <Project_Tile project=&project />)
+                    view!( <ProjectTile project=&project />)
                 }
             />
         </div>
@@ -136,7 +135,7 @@ pub fn Add_Project() -> impl IntoView {
 }
 
 #[component]
-pub fn Project_Tile<'a>(project: &'a Project) -> impl IntoView {
+pub fn ProjectTile<'a>(project: &'a Project) -> impl IntoView {
     let modal = use_modal_controller();
     let project_clone = project.clone(); // Clone the Project here
     let project_clone2 = project.clone(); // Clone the Project here
@@ -160,7 +159,7 @@ pub fn Project_Tile<'a>(project: &'a Project) -> impl IntoView {
             </button>
             <button class="icon-button" on:click=move|_| {
                 let project_clone_for_closure = project_clone2.clone();
-                modal.open(view!{ <Project_Options project=&project_clone_for_closure/>})
+                modal.open(view!{ <ProjectOptions project=&project_clone_for_closure/>})
             }>
                 <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
             </button>
@@ -169,7 +168,7 @@ pub fn Project_Tile<'a>(project: &'a Project) -> impl IntoView {
 }
 
 #[component]
-pub fn Project_Options<'a>(project: &'a Project) -> impl IntoView {
+pub fn ProjectOptions<'a>(project: &'a Project) -> impl IntoView {
     println!("Project Options clicked");
     let modal = use_modal_controller();
     let project_clone = project.clone();
@@ -180,14 +179,14 @@ pub fn Project_Options<'a>(project: &'a Project) -> impl IntoView {
                 println!("Edit pressesd");
                 let project_clone_for_closure = project_clone.clone();
                 modal.close();
-                modal.open(view!{ <Project_Edit project=&project_clone_for_closure/>});
+                modal.open(view!{ <ProjectEdit project=&project_clone_for_closure/>});
             }>
                 <i class="fa fa-pencil" aria-hidden="true"> Edit</i>
             </button>
             <button class="icon-button" on:click=move|_| {
                 let project_clone_for_closure = project_clone2.clone();
                 modal.close();
-                modal.open(view!{ <Project_Delete_Confirmation project=&project_clone_for_closure/>})
+                modal.open(view!{ <ProjectDeleteConfirmation project=&project_clone_for_closure/>})
             }>
                 <i class="fa fa-trash" aria-hidden="true"> Delete</i>
             </button>
@@ -196,7 +195,7 @@ pub fn Project_Options<'a>(project: &'a Project) -> impl IntoView {
 }
 
 #[component]
-pub fn Project_Delete_Confirmation<'a>(project: &'a Project) -> impl IntoView {
+pub fn ProjectDeleteConfirmation<'a>(project: &'a Project) -> impl IntoView {
     println!("Project Delete Confirmation clicked");
     let modal = use_modal_controller();
     let project_id = project.id.clone();
@@ -225,7 +224,7 @@ pub fn Project_Delete_Confirmation<'a>(project: &'a Project) -> impl IntoView {
 }
 
 #[component]
-pub fn Project_Edit<'a>(project: &'a Project) -> impl IntoView {
+pub fn ProjectEdit<'a>(project: &'a Project) -> impl IntoView {
     println!("Project Edit clicked");
     let project_name = create_rw_signal(String::new());
     let project_description = create_rw_signal(String::new());

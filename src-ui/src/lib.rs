@@ -5,7 +5,7 @@ pub mod contexts;
 pub mod utilities;
 use crate::components::project::Project;
 use crate::utilities::set_displayed_theme;
-use components::projects::{Project_Header, Projects};
+use components::projects::Projects;
 use contexts::modal_controller::{ModalController, ModalViewer};
 use tauri_sys::tauri;
 

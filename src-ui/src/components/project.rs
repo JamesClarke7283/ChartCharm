@@ -1,12 +1,8 @@
-use std::process::id;
-
 use crate::components::core::{QueryProjectCmdArgs, Sidebar};
 use crate::contexts::modal_controller::use_modal_controller;
-use chartcharm_shared::{Project, ProjectError};
 use chrono::Utc;
 use leptos::{
-    component, create_effect, create_resource, create_rw_signal, event_target_value, spawn_local,
-    tracing, view, warn, IntoView, Params, SignalGet, SignalSet, SignalWith, Suspense,
+    component, create_resource, tracing, view, warn, IntoView, SignalGet, SignalWith, Suspense,
 };
 use leptos_router::*;
 use log::info;
@@ -57,19 +53,11 @@ pub fn ProjectHeader<'poo>(project: &'poo chartcharm_shared::Project) -> impl In
 #[component]
 pub fn Project() -> impl IntoView {
     let params = use_params_map();
-    let modal = use_modal_controller();
+    //let modal = use_modal_controller();
     let id = move || params.with(|params| params.get("id").cloned());
 
     let id_str = id().unwrap_or_else(|| "0".to_string());
     let id = id_str.parse::<u16>().unwrap_or(0); // replace unwrap with proper error handling
-
-    let project = create_rw_signal(chartcharm_shared::Project {
-        id: 0,
-        name: String::new(),
-        description: String::new(),
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
-    });
 
     let query_project = create_resource(
         || {},
@@ -95,19 +83,6 @@ pub fn Project() -> impl IntoView {
         },
     );
 
-    let project = move || match query_project.get() {
-        Some(project) => project.clone(),
-        None => {
-            warn!("Failed to get project with id '{id}'");
-            chartcharm_shared::Project {
-                id: 0,
-                name: String::new(),
-                description: String::new(),
-                created_at: Utc::now(),
-                updated_at: Utc::now(),
-            }
-        }
-    };
     view! {
         <Suspense fallback=|| view!{<p>{"Loading..."}</p>}>
         {move ||{
