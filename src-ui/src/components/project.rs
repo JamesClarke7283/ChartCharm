@@ -6,13 +6,14 @@ use chartcharm_shared::{Project, ProjectError};
 use chrono::Utc;
 use leptos::{
     component, create_effect, create_resource, create_rw_signal, event_target_value, spawn_local,
-    tracing, view, warn, IntoView, Params, SignalGet, SignalSet, SignalWith,
+    tracing, view, warn, IntoView, Params, SignalGet, SignalSet, SignalWith, Suspense,
 };
 use leptos_router::*;
+use log::info;
 use tauri_sys::tauri;
 
 #[component]
-pub fn ProjectHeader<'a>(project: &'a chartcharm_shared::Project) -> impl IntoView {
+pub fn ProjectHeader<'poo>(project: &'poo chartcharm_shared::Project) -> impl IntoView {
     let modal = use_modal_controller();
     let project = project.clone();
     view! {
@@ -70,20 +71,53 @@ pub fn Project() -> impl IntoView {
         updated_at: Utc::now(),
     });
 
-    spawn_local(async move {
-        let result: Result<Project, _> =
-            tauri::invoke("query_project", &QueryProjectCmdArgs { id }).await;
-        match result {
-            Ok(proj) => {
-                project.set(proj);
-            }
-            Err(e) => {
-                warn!("Failed to call list_projects: {}", e);
+    let query_project = create_resource(
+        || {},
+        move |_| async move {
+            let retrieved_project =
+                match tauri::invoke("query_project", &QueryProjectCmdArgs { id: id }).await {
+                    Ok(projects) => {
+                        info!("project: {projects:?}");
+                        projects
+                    }
+                    Err(e) => {
+                        warn!("Failed to call list_projects: {}", e);
+                        return chartcharm_shared::Project {
+                            id: 0,
+                            name: String::new(),
+                            description: String::new(),
+                            created_at: Utc::now(),
+                            updated_at: Utc::now(),
+                        };
+                    }
+                };
+            retrieved_project
+        },
+    );
+
+    let project = move || match query_project.get() {
+        Some(project) => project.clone(),
+        None => {
+            warn!("Failed to get project with id '{id}'");
+            chartcharm_shared::Project {
+                id: 0,
+                name: String::new(),
+                description: String::new(),
+                created_at: Utc::now(),
+                updated_at: Utc::now(),
             }
         }
-    });
-
+    };
     view! {
-        <ProjectHeader project=&project.get() />
+        <Suspense fallback=|| view!{<p>{"Loading..."}</p>}>
+        {move ||{
+            query_project.get().map(|project| {
+                view! {
+                    <ProjectHeader project=&project/>
+                }
+            })
+        }
+    }
+    </Suspense>
     }
 }

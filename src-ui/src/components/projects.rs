@@ -142,7 +142,7 @@ pub fn Project_Tile<'a>(project: &'a Project) -> impl IntoView {
     let project_clone2 = project.clone(); // Clone the Project here
 
     view!(
-        <div class="project-tile">
+        <div class="project-tile" role="button">
         <button id="project-button" on:click=move|_| {
             let project_clone_for_closure = project_clone.clone();
             let project_id = project_clone_for_closure.id.to_string();
@@ -153,15 +153,16 @@ pub fn Project_Tile<'a>(project: &'a Project) -> impl IntoView {
         }>
             <div class="title-container">
                 <h1>{project.name.to_string()}</h1>
-                <button class="icon-button" on:click=move|_| {
-                    let project_clone_for_closure = project_clone2.clone();
-                    modal.open(view!{ <Project_Options project=&project_clone_for_closure/>})
-                }>
-                    <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
-                </button>
+
             </div>
             <hr class="pico-divider"></hr>
             <p>{project.description.to_string()}</p>
+            </button>
+            <button class="icon-button" on:click=move|_| {
+                let project_clone_for_closure = project_clone2.clone();
+                modal.open(view!{ <Project_Options project=&project_clone_for_closure/>})
+            }>
+                <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
             </button>
         </div>
     )
