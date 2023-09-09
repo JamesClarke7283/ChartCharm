@@ -37,6 +37,11 @@ pub struct QueryProjectCmdArgs {
     pub id: u16,
 }
 
+#[derive(Serialize)]
+pub struct ListDataPointsCmdArgs {
+    pub project: u16,
+}
+
 // Sidebar Component
 #[component]
 pub fn Sidebar() -> impl IntoView {

@@ -1,0 +1,7 @@
+.datapoint-tile {
+    // Make all elements horizontal 
+    display: flex;
+    flex-direction: row;
+    // Make all elements the same height
+    align-items: stretch;
+}
