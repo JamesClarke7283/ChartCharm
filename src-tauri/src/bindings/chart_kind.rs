@@ -1,7 +1,8 @@
-use crate::get_connection;
-use crate::models::chart_kind;
+use chartcharm_database::get_connection;
+use chartcharm_database::models::chart_kind;
 use sea_orm::entity::prelude::*;
 
+#[tauri::command]
 pub async fn query_chart_kind(id: u8) -> Result<String, DbErr> {
     let conn = match get_connection().await {
         Ok(conn) => conn,
@@ -28,6 +29,7 @@ pub async fn query_chart_kind(id: u8) -> Result<String, DbErr> {
     Ok(chart_kind.name)
 }
 
+#[tauri::command]
 pub async fn list_chart_kinds() -> Result<Vec<String>, DbErr> {
     println!("list_chart_kinds function called");
 
