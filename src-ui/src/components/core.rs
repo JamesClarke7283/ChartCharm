@@ -2,9 +2,10 @@ use crate::components::projects::Add_Project;
 use crate::contexts::modal_controller::use_modal_controller;
 use crate::utilities::set_displayed_theme;
 use leptos::{
-    component, create_action, create_rw_signal, event_target_value, tracing, view, warn, IntoView,
-    SignalGet, SignalSet,
+    component, create_action, create_rw_signal, event_target_value, request_animation_frame,
+    tracing, view, warn, IntoView, SignalGet, SignalSet,
 };
+use leptos_router::use_navigate;
 use serde::Serialize;
 use tauri_sys::tauri;
 use wasm_bindgen::JsCast;
@@ -86,7 +87,13 @@ pub fn Sidebar() -> impl IntoView {
         <h1>Chart Charm</h1>
         <hr class="pico-divider"></hr>
         <ul class="sidebar-menu">
-        <button id="sidebar-home-btn" on:click=move|_|modal.close()><li><i class="fa fa-plus"></i> Home</li></button>
+        <button id="sidebar-home-btn" on:click=move|_|{
+            modal.close();
+            request_animation_frame(move || {
+                let navigate = leptos_router::use_navigate();
+                _ = navigate("/", Default::default());
+            });
+        }><li><i class="fa fa-plus"></i> Home</li></button>
         <li><i class="fa fa-bell"></i> Reminders</li>
         <li><i class="fa fa-pencil"></i> Notes</li>
         <li><i class="fa fa-undo"></i> Backup and Restore</li>
