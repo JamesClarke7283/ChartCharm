@@ -36,13 +36,11 @@ cargo install --locked wasm-bindgen-cli
 npm install --global --save-exact esbuild
 ```
 
-## Credits
+# License
 
-All credit for the counter example in [`./src-ui/src/lib.rs`](src-ui/src/lib.rs) goes to 
-authors and contributors of [gbj/leptos][leptos_repo] GitHub repository, 
-[MIT License][leptos_license], Copyright 2022 Greg Johnston.
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-[tauri_web]: https://tauri.app/
-[leptos_repo]: https://github.com/gbj/leptos
-[leptos_nightly_note]: https://github.com/gbj/leptos#nightly-note
-[leptos_license]: https://github.com/gbj/leptos/blob/e465867b30db8fccce7493f9fc913359246ac4bd/LICENSE
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>. 
+
