@@ -42,6 +42,12 @@ pub struct ListDataPointsCmdArgs {
     pub project: u16,
 }
 
+#[derive(Serialize)]
+pub struct AddDataPointCmdArgs {
+    pub project: u16,
+    pub data: f32,
+}
+
 // Sidebar Component
 #[component]
 pub fn Sidebar() -> impl IntoView {

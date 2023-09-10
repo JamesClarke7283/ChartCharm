@@ -7,7 +7,7 @@ use sea_orm::IntoActiveModel;
 use sea_orm::Set;
 
 #[tauri::command]
-pub async fn add_datapoint(project: u16, data: f64) -> Result<(), DataPointError> {
+pub async fn add_datapoint(project: u16, data: f32) -> Result<(), DataPointError> {
     println!("add_datapoint function called");
 
     let conn = match get_connection().await {
@@ -89,7 +89,7 @@ pub async fn list_datapoints(project: u16) -> Result<Vec<DataPoint>, DataPointEr
 }
 
 #[tauri::command]
-pub async fn query_datapoint(project: u16, data: f64) -> Result<DataPoint, DataPointError> {
+pub async fn query_datapoint(project: u16, data: f32) -> Result<DataPoint, DataPointError> {
     println!("query_datapoint function called");
 
     let conn = match get_connection().await {
@@ -133,7 +133,7 @@ pub async fn query_datapoint(project: u16, data: f64) -> Result<DataPoint, DataP
 }
 
 #[tauri::command]
-pub async fn update_datapoint(id: u16, new_data: f64) -> Result<(), DataPointError> {
+pub async fn update_datapoint(id: u16, new_data: f32) -> Result<(), DataPointError> {
     println!("update_datapoint function called");
 
     let conn = match get_connection().await {
@@ -181,7 +181,7 @@ pub async fn update_datapoint(id: u16, new_data: f64) -> Result<(), DataPointErr
 }
 
 #[tauri::command]
-pub async fn delete_datapoint(project: u16, data: f64) -> Result<(), DataPointError> {
+pub async fn delete_datapoint(project: u16, data: f32) -> Result<(), DataPointError> {
     println!("delete_datapoint function called");
 
     let conn = match get_connection().await {
