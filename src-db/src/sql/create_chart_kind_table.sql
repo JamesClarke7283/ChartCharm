@@ -1,4 +1,0 @@
-CREATE TABLE IF NOT EXISTS chart_kind (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
-);

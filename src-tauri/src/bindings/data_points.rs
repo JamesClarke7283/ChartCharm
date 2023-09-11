@@ -1,223 +1,141 @@
 use chartcharm_database::get_connection;
-use chartcharm_database::models::data_points;
 use chartcharm_shared::data_point::{DataPoint, DataPointError};
-use chrono::Utc;
-use sea_orm::entity::prelude::*;
-use sea_orm::IntoActiveModel;
-use sea_orm::Set;
+use chrono::prelude::*;
 
-#[tauri::command]
-pub async fn add_datapoint(project: u16, data: f32) -> Result<(), DataPointError> {
-    println!("add_datapoint function called");
+pub fn create_datapoints_table() -> Result<(), DataPointError> {
+    let mut db = get_connection()
+        .map_err(|e| DataPointError::ConnectionError("N/A".to_string(), e.to_string()))?;
+    let create_table_sql = "CREATE TABLE IF NOT EXISTS data_points (
+        id INTEGER PRIMARY KEY,
+        project INTEGER NOT NULL,
+        data REAL NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        FOREIGN KEY (project) REFERENCES projects(id)
+    );";
+    let mut stmt = db
+        .prepare(create_table_sql)
+        .map_err(|e| DataPointError::CreateError(e.to_string()))?;
 
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(DataPointError::ConnectionError(
-                e.to_string(),
-                project.to_string(),
-            ));
-        }
-    };
-
-    println!("Got connection");
-
-    let data_point = data_points::ActiveModel {
-        project: Set(project),
-        data: Set(data),
-        created_at: Set(Utc::now()),
-        updated_at: Set(Utc::now()),
-        ..Default::default()
-    };
-
-    match data_point.insert(&conn).await {
-        Ok(data_point) => {
-            println!("Added data_point: {data_point:?}");
-            Ok(())
-        }
-        Err(e) => {
-            println!("Failed to insert data_point: {e:?}");
-            Err(DataPointError::InsertError(e.to_string()))
-        }
-    }
+    stmt.execute()
+        .map_err(|e| DataPointError::CreateError(e.to_string()))?;
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn list_datapoints(project: u16) -> Result<Vec<DataPoint>, DataPointError> {
-    println!("list_datapoints function called");
+pub fn add_datapoint(project: u16, data: f32) -> Result<(), DataPointError> {
+    let mut db = get_connection()
+        .map_err(|e| DataPointError::ConnectionError(e.to_string(), project.to_string()))?;
 
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(DataPointError::ConnectionError(
-                e.to_string(),
-                project.to_string(),
-            ));
-        }
-    };
+    let created_at = Utc::now().timestamp();
+    let updated_at = created_at;
 
-    println!("Got connection");
+    let insert_sql =
+        format!("INSERT INTO data_points (project, data, created_at, updated_at) VALUES ({project}, {data}, {created_at}, {updated_at});");
+    let mut stmt = db.prepare(&insert_sql).unwrap();
 
-    let data_points = match data_points::Entity::find()
-        .filter(data_points::Column::Project.eq(project))
-        .all(&conn)
-        .await
-    {
-        Ok(data_points) => data_points,
-        Err(e) => {
-            println!("Failed to get data_points: {e:?}");
-            return Err(DataPointError::RetrieveError(e.to_string()));
-        }
-    };
+    stmt.execute()
+        .map_err(|e| DataPointError::InsertError(e.to_string()))?;
 
-    let data_points = data_points
-        .into_iter()
-        .map(|data_point| DataPoint {
-            id: data_point.id,
-            project: data_point.project,
-            data: data_point.data,
-            created_at: data_point.created_at,
-            updated_at: data_point.updated_at,
-        })
-        .collect();
+    Ok(())
+}
 
-    println!("Retrieved data_points: {data_points:?}");
+#[tauri::command]
+pub fn list_datapoints(project: u16) -> Result<Vec<DataPoint>, DataPointError> {
+    let mut db = get_connection()
+        .map_err(|e| DataPointError::ConnectionError(e.to_string(), project.to_string()))?;
+
+    let query_sql = format!("SELECT * FROM data_points WHERE project = {project}");
+    let mut stmt = db.prepare(&query_sql).unwrap();
+    let mut rows = stmt.execute().unwrap();
+
+    let mut data_points = Vec::new();
+
+    while let Some(row) = rows.next_row().unwrap() {
+        let columns = row.parse().unwrap();
+        let id: u64 = columns.get(0).as_integer().unwrap() as u64;
+        let project: u16 = columns.get(1).as_integer().unwrap() as u16;
+        let data: f32 = columns.get(2).as_float().unwrap() as f32;
+        let created_at: i64 = columns.get(3).as_integer().unwrap();
+        let updated_at: i64 = columns.get(4).as_integer().unwrap();
+
+        let data_point = DataPoint {
+            id,
+            project,
+            data,
+            created_at: Utc.timestamp(created_at, 0),
+            updated_at: Utc.timestamp(updated_at, 0),
+        };
+
+        data_points.push(data_point);
+    }
 
     Ok(data_points)
 }
 
 #[tauri::command]
-pub async fn query_datapoint(project: u16, data: f32) -> Result<DataPoint, DataPointError> {
-    println!("query_datapoint function called");
+pub fn query_datapoint(id: u64) -> Result<DataPoint, DataPointError> {
+    let mut db = get_connection()
+        .map_err(|e| DataPointError::ConnectionError(e.to_string(), id.to_string()))?;
 
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(DataPointError::ConnectionError(
-                e.to_string(),
-                project.to_string(),
-            ));
-        }
+    let mut stmt = db
+        .prepare(&format!(
+            "SELECT * FROM data_points WHERE id = {}",
+            id.to_string()
+        ))
+        .unwrap();
+
+    let mut rows = stmt.execute().unwrap();
+    let row = rows.next_row().unwrap().unwrap();
+    let columns = row.parse().unwrap();
+
+    let id: u64 = columns.get(0).as_integer().unwrap() as u64;
+    let project: u16 = columns.get(1).as_integer().unwrap() as u16;
+    let data: f32 = columns.get(2).as_float().unwrap() as f32;
+    let created_at: i64 = columns.get(3).as_integer().unwrap();
+    let updated_at: i64 = columns.get(4).as_integer().unwrap();
+
+    let data_point = DataPoint {
+        id,
+        project,
+        data,
+        created_at: Utc.timestamp(created_at, 0),
+        updated_at: Utc.timestamp(updated_at, 0),
     };
 
-    println!("Got connection");
-
-    match data_points::Entity::find()
-        .filter(data_points::Column::Id.eq(project))
-        .filter(data_points::Column::Data.eq(data))
-        .one(&conn)
-        .await
-    {
-        Ok(data_point) => {
-            return {
-                let data_point = data_point.unwrap();
-                let data_point = DataPoint {
-                    id: data_point.id,
-                    project: data_point.project,
-                    data: data_point.data,
-                    created_at: data_point.created_at,
-                    updated_at: data_point.updated_at,
-                };
-                println!("Retrieved data_point: {data_point:?}");
-                Ok(data_point)
-            }
-        }
-        Err(e) => {
-            println!("Failed to get data_point: {e:?}");
-            return Err(DataPointError::RetrieveError(e.to_string()));
-        }
-    };
+    Ok(data_point)
 }
 
 #[tauri::command]
-pub async fn update_datapoint(id: u16, new_data: f32) -> Result<(), DataPointError> {
-    println!("update_datapoint function called");
+pub fn update_datapoint(id: u64, new_data: f32) -> Result<(), DataPointError> {
+    let mut db = get_connection()
+        .map_err(|e| DataPointError::ConnectionError(e.to_string(), id.to_string()))?;
 
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(DataPointError::ConnectionError(
-                e.to_string(),
-                id.to_string(),
-            ));
-        }
-    };
+    let updated_at = Utc::now().timestamp();
 
-    println!("Got connection");
+    let mut stmt = db
+        .prepare(&format!(
+            "UPDATE data_points SET data = {new_data}, updated_at = {updated_at} WHERE id = {id}"
+        ))
+        .unwrap();
 
-    let data_point = match data_points::Entity::find_by_id(id).one(&conn).await {
-        Ok(data_point) => match data_point {
-            Some(data_point) => data_point,
-            None => {
-                println!("No data_point found with id: {id}");
-                return Err(DataPointError::RetrieveError(id.to_string()));
-            }
-        },
-        Err(e) => {
-            println!("Failed to get data_point: {e:?}");
-            return Err(DataPointError::RetrieveError(e.to_string()));
-        }
-    };
+    stmt.execute()
+        .map_err(|e| DataPointError::UpdateError(e.to_string()))?;
 
-    let mut data_point = data_point.into_active_model();
-
-    data_point.data = Set(new_data);
-    data_point.updated_at = Set(Utc::now());
-
-    match data_point.update(&conn).await {
-        Ok(data_point) => {
-            println!("Updated data_point: {data_point:?}");
-            Ok(())
-        }
-        Err(e) => {
-            println!("Failed to update data_point: {e:?}");
-            Err(DataPointError::UpdateError(e.to_string()))
-        }
-    }
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn delete_datapoint(project: u16, data: f32) -> Result<(), DataPointError> {
-    println!("delete_datapoint function called");
+pub fn delete_datapoint(id: u64) -> Result<(), DataPointError> {
+    let mut db = get_connection()
+        .map_err(|e| DataPointError::ConnectionError(e.to_string(), id.to_string()))?;
 
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(DataPointError::ConnectionError(
-                e.to_string(),
-                project.to_string(),
-            ));
-        }
-    };
+    let mut stmt = db
+        .prepare(&format!("DELETE FROM data_points WHERE id = {id}"))
+        .unwrap();
 
-    println!("Got connection");
+    stmt.execute()
+        .map_err(|e| DataPointError::DeleteError(e.to_string()))?;
 
-    let data_point = match data_points::Entity::find()
-        .filter(data_points::Column::Project.eq(project))
-        .filter(data_points::Column::Data.eq(data))
-        .one(&conn)
-        .await
-    {
-        Ok(data_point) => data_point.unwrap(),
-        Err(e) => {
-            println!("Failed to get data_point: {e:?}");
-            return Err(DataPointError::RetrieveError(e.to_string()));
-        }
-    };
-
-    match data_point.delete(&conn).await {
-        Ok(_) => {
-            println!("Deleted data_point with id: {project}");
-            Ok(())
-        }
-        Err(e) => {
-            println!("Failed to delete data_point: {e:?}");
-            Err(DataPointError::RetrieveError(e.to_string()))
-        }
-    }
+    Ok(())
 }

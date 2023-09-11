@@ -14,6 +14,10 @@ pub enum ProjectError {
     DeleteError(String),
     #[error("Failed to update project: {0}")]
     UpdateError(String),
+    #[error("Failed to decode project")]
+    DecodeError,
+    #[error("Failed to create project: {0}")]
+    CreateError(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

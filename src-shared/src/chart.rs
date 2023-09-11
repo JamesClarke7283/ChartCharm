@@ -8,6 +8,16 @@ pub enum ChartError {
     RetrieveError(String),
     #[error("Failed to connect to database {0} for chart: {1}")]
     ConnectionError(String, String),
+    #[error("Failed to insert chart: {0}")]
+    InsertError(String),
+    #[error("Failed to delete chart: {0}")]
+    DeleteError(String),
+    #[error("Failed to update chart: {0}")]
+    UpdateError(String),
+    #[error("Failed to decode chart")]
+    DecodeError,
+    #[error("Failed to create chart")]
+    CreateError,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

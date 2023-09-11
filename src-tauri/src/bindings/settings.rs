@@ -1,89 +1,99 @@
 use chartcharm_database::get_connection;
-use chartcharm_database::models::{settings, theme};
-use chartcharm_shared::settings::SettingsError;
-use sea_orm::entity::prelude::*;
-use sea_orm::{IntoActiveModel, Set};
+use chartcharm_shared::settings::SettingsError; // Import ThemeError if it's in a different module
 
-#[tauri::command]
-pub async fn update_theme(theme: &str) -> Result<(), SettingsError> {
-    println!("update_theme function called");
+pub fn populate_settings_table() -> Result<(), SettingsError> {
+    let mut db = get_connection()
+        .map_err(|e| SettingsError::ConnectionError("N/A".to_string(), e.to_string()))?;
+    let mut stmt = db
+        .prepare("INSERT INTO settings (theme_selected) VALUES (1);")
+        .map_err(|e| SettingsError::InsertError(e.to_string()))?;
 
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(SettingsError::ConnectionError(
-                e.to_string(),
-                theme.to_string(),
-            ));
-        }
-    };
+    stmt.execute()
+        .map_err(|e| SettingsError::InsertError(e.to_string()))?;
+    Ok(())
+}
 
-    println!("Got connection");
-    // Query theme table for the id of the theme with the name of the theme passed in
-    let theme_id = match theme::Entity::find()
-        .filter(theme::Column::Name.contains(theme))
-        .one(&conn)
-        .await
-    {
-        Ok(theme) => theme.unwrap().id,
-        Err(e) => {
-            println!("Failed to get theme: {e:?}");
-            return Err(SettingsError::RetrieveError(e.to_string()));
-        }
-    };
-    // Update the settings table's theme_selected column to the id of the theme with the name of the theme passed in
-    let settings_item = match settings::Entity::find_by_id(1).one(&conn).await {
-        Ok(settings_item) => settings_item.unwrap(),
-        Err(e) => {
-            println!("Failed to get settings: {e:?}");
-            return Err(SettingsError::RetrieveError(e.to_string()));
-        }
-    };
+pub fn create_settings_table() -> Result<(), SettingsError> {
+    let mut db = get_connection()
+        .map_err(|e| SettingsError::ConnectionError("N/A".to_string(), e.to_string()))?;
+    let create_table_sql = "CREATE TABLE settings IF NOT EXISTS(
+            id INTEGER PRIMARY KEY,
+            theme_selected INTEGER NOT NULL,
+            FOREIGN KEY (theme_selected) REFERENCES theme (id)
+        );";
+    let mut stmt = db
+        .prepare(create_table_sql)
+        .map_err(|e| SettingsError::CreateError(e.to_string()))?;
 
-    let mut settings_item = settings_item.into_active_model();
-
-    settings_item.theme_selected = Set(theme_id);
-
-    match settings_item.update(&conn).await {
-        Ok(settings_item) => {
-            println!("Updated settings: {settings_item:?}");
-            return Ok(());
-        }
-        Err(e) => {
-            println!("Failed to update settings: {e:?}");
-            return Err(SettingsError::UpdateError(e.to_string()));
-        }
-    };
+    stmt.execute()
+        .map_err(|e| SettingsError::CreateError(e.to_string()))?;
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn query_theme() -> Result<String, SettingsError> {
-    println!("query_theme function called");
+pub fn update_settings_theme(theme: &str) -> Result<(), SettingsError> {
+    let mut db = get_connection()
+        .map_err(|e| SettingsError::ConnectionError(e.to_string(), theme.to_string()))?;
 
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(SettingsError::ConnectionError(e.to_string(), String::new()));
-        }
-    };
+    let mut stmt = db
+        .prepare(&format!("SELECT id FROM theme WHERE name = '{}';", theme))
+        .map_err(|e| SettingsError::RetrieveError(e.to_string()))?;
 
-    println!("Got connection");
-    // Query the settings table for the theme_selected column
-    let theme_id = match settings::Entity::find_by_id(1).one(&conn).await {
-        Ok(settings_item) => settings_item.unwrap().theme_selected,
-        Err(e) => {
-            println!("Failed to get settings: {e:?}");
-            return Err(SettingsError::RetrieveError(e.to_string()));
-        }
-    };
-    // Query the theme table for the name of the theme with the id of the theme_selected column
-    match theme::Entity::find_by_id(theme_id).one(&conn).await {
-        Ok(theme) => Ok(theme.unwrap().name),
-        Err(e) => {
-            println!("Failed to get theme: {e:?}");
-            return Err(SettingsError::RetrieveError(e.to_string()));
-        }
-    }
+    let mut rows = stmt
+        .execute()
+        .map_err(|e| SettingsError::RetrieveError(e.to_string()))?;
+
+    let row = rows.next_row().unwrap().unwrap();
+    let columns = row.parse().unwrap();
+    let theme_id = columns.get(0).as_string().unwrap(); // Assuming you have an as_string() method
+
+    let mut db2 = get_connection()
+        .map_err(|e| SettingsError::ConnectionError(e.to_string(), theme.to_string()))?;
+
+    let mut stmt = db2
+        .prepare(&format!(
+            "UPDATE settings SET theme_selected = {} WHERE id = 1;",
+            theme_id
+        ))
+        .map_err(|e| SettingsError::UpdateError(e.to_string()))?;
+
+    stmt.execute()
+        .map_err(|e| SettingsError::UpdateError(e.to_string()))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn query_settings_theme() -> Result<String, SettingsError> {
+    let mut db = get_connection()
+        .map_err(|e| SettingsError::ConnectionError(e.to_string(), String::new()))?;
+
+    let mut stmt = db
+        .prepare("SELECT theme_selected FROM settings WHERE id = 1;")
+        .map_err(|e| SettingsError::RetrieveError(e.to_string()))?;
+
+    let mut rows = stmt
+        .execute()
+        .map_err(|e| SettingsError::RetrieveError(e.to_string()))?;
+
+    let row = rows.next_row().unwrap().unwrap();
+    let columns = row.parse().unwrap();
+    let theme_id = columns.get(0).as_string().unwrap();
+
+    let mut db2 = get_connection()
+        .map_err(|e| SettingsError::ConnectionError(e.to_string(), String::new()))?;
+
+    let mut stmt = db2
+        .prepare(&format!("SELECT name FROM theme WHERE id = {};", theme_id))
+        .map_err(|e| SettingsError::RetrieveError(e.to_string()))?;
+
+    let mut rows = stmt
+        .execute()
+        .map_err(|e| SettingsError::RetrieveError(e.to_string()))?;
+
+    let row = rows.next_row().unwrap().unwrap();
+    let columns = row.parse().unwrap();
+    let theme_name = columns.get(0).as_string().unwrap();
+
+    Ok(theme_name)
 }

@@ -14,6 +14,10 @@ pub enum DataPointError {
     DeleteError(String),
     #[error("Failed to update datapoint: {0}")]
     UpdateError(String),
+    #[error("Failed to decode datapoint")]
+    DecodeError,
+    #[error("Failed to create datapoint: {0}")]
+    CreateError(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

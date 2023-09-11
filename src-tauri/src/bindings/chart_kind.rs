@@ -1,55 +1,67 @@
 use chartcharm_database::get_connection;
-use chartcharm_database::models::chart_kind;
-use sea_orm::entity::prelude::*;
+use chartcharm_shared::chart_kind::{ChartKind, ChartKindError};
+use chrono::prelude::*;
 
-#[tauri::command]
-pub async fn query_chart_kind(id: u8) -> Result<String, DbErr> {
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(DbErr::Custom(e.to_string()));
-        }
-    };
+pub fn populate_chartkind_table() -> Result<(), ChartKindError> {
+    let mut db = get_connection()
+        .map_err(|e| ChartKindError::ConnectionError("N/A".to_string(), e.to_string()))?;
+    let mut stmt = db
+        .prepare("INSERT INTO chart_kind (name) VALUES ('line');")
+        .map_err(|e| ChartKindError::InsertError(e.to_string()))?;
 
-    println!("Got connection");
+    stmt.execute()
+        .map_err(|e| ChartKindError::InsertError(e.to_string()))?;
+    Ok(())
+}
 
-    let chart_kind = match chart_kind::Entity::find_by_id(id).one(&conn).await? {
-        Some(chart_kind) => chart_kind,
-        None => {
-            println!("No chart kind found with id: {id}");
-            return Err(DbErr::RecordNotFound(format!(
-                "Chart kind with id {id} not found"
-            )));
-        }
-    };
+pub fn create_chartkind_table() -> Result<(), ChartKindError> {
+    let mut db = get_connection()
+        .map_err(|e| ChartKindError::ConnectionError(e.to_string(), "all".to_string()))?;
 
-    println!("Retrieved chart kind: {chart_kind:?}");
+    let mut stmt = db
+        .prepare(
+            "CREATE TABLE IF NOT EXISTS chart_kind (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL
+        );",
+        )
+        .unwrap();
 
-    Ok(chart_kind.name)
+    stmt.execute().map_err(|e| ChartKindError::CreateError)?;
+
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn list_chart_kinds() -> Result<Vec<String>, DbErr> {
-    println!("list_chart_kinds function called");
+pub fn query_chart_kind(id: u8) -> Result<String, ChartKindError> {
+    let mut db = get_connection()
+        .map_err(|e| ChartKindError::ConnectionError(e.to_string(), id.to_string()))?;
 
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(DbErr::Custom(e.to_string()));
-        }
-    };
+    let query_sql = format!("SELECT * FROM chart_kind WHERE id = {};", id);
+    let mut stmt = db.prepare(&query_sql).unwrap();
+    let mut rows = stmt.execute().unwrap();
+    let row = rows.next_row().unwrap().unwrap();
+    let columns = row.parse().unwrap();
+    let name: String = columns.get(1).as_string().unwrap().to_string();
 
-    println!("Got connection");
+    Ok(name)
+}
 
-    let chart_kinds = chart_kind::Entity::find().all(&conn).await?;
-    let new_chart_kinds = chart_kinds
-        .into_iter()
-        .map(|chart_kind| chart_kind.name)
-        .collect();
+#[tauri::command]
+pub fn list_chart_kinds() -> Result<Vec<String>, ChartKindError> {
+    let mut db = get_connection()
+        .map_err(|e| ChartKindError::ConnectionError(e.to_string(), "all".to_string()))?;
 
-    println!("Retrieved chart kinds: {new_chart_kinds:?}");
+    let query_sql = "SELECT * FROM chart_kind;";
+    let mut stmt = db.prepare(&query_sql).unwrap();
+    let mut rows = stmt.execute().unwrap();
 
-    Ok(new_chart_kinds)
+    let mut chart_kinds = Vec::new();
+    while let Some(row) = rows.next_row().unwrap() {
+        let columns = row.parse().unwrap();
+        let name: String = columns.get(1).as_string().unwrap().to_string();
+        chart_kinds.push(name);
+    }
+
+    Ok(chart_kinds)
 }

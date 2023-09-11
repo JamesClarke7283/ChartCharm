@@ -1,9 +1,20 @@
-use crate::get_connection;
+use chartcharm_database::get_connection;
 use chartcharm_shared::theme::ThemeError;
 
-pub async fn create_table() -> Result<(), ThemeError> {
+pub fn populate_theme_table() -> Result<(), ThemeError> {
     let mut db = get_connection()
-        .await
+        .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
+    let mut stmt = db
+        .prepare("INSERT INTO theme (name) VALUES ('auto'), ('light'), ('dark');")
+        .map_err(|e| ThemeError::InsertError(e.to_string()))?;
+
+    stmt.execute()
+        .map_err(|e| ThemeError::InsertError(e.to_string()))?;
+    Ok(())
+}
+
+pub fn create_theme_table() -> Result<(), ThemeError> {
+    let mut db = get_connection()
         .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
     let create_table_sql =
         "CREATE TABLE IF NOT EXISTS theme (id INTEGER PRIMARY KEY, name TEXT NOT NULL);";
@@ -16,9 +27,9 @@ pub async fn create_table() -> Result<(), ThemeError> {
     Ok(())
 }
 
-pub async fn insert_theme(name: &str) -> Result<(), ThemeError> {
+#[tauri::command]
+pub fn insert_theme(name: &str) -> Result<(), ThemeError> {
     let mut db = get_connection()
-        .await
         .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
     let mut stmt = db
         .prepare(&format!("INSERT INTO theme (name) VALUES ({});", name))
@@ -29,8 +40,9 @@ pub async fn insert_theme(name: &str) -> Result<(), ThemeError> {
     Ok(())
 }
 
-pub async fn query_theme(id: u8) -> Result<String, ThemeError> {
-    let mut db = match get_connection().await {
+#[tauri::command]
+pub fn query_theme(id: u8) -> Result<String, ThemeError> {
+    let mut db = match get_connection() {
         Ok(db) => db,
         Err(e) => {
             println!("Failed to get database connection: {:?}", e);

@@ -10,6 +10,5 @@ prsqlite = { git = "https://github.com/JamesClarke7283/prsqlite/", version = "0.
 dirs = "5"
 async-std = { version = "1", features = ["attributes"] }
 chrono = "0.4"
-chartcharm_database_migration = { path = "../src-migrations" }
 chartcharm_shared = { path = "../src-shared" }
 anyhow = "1.0"

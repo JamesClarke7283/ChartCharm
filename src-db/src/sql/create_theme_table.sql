@@ -1,4 +1,0 @@
-CREATE TABLE theme  IF NOT EXISTS (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
-);

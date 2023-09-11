@@ -1,24 +1,8 @@
-use prsqlite::Connection;
-pub mod bindings;
-use crate::bindings::theme::create_table as create_theme_table;
-use chartcharm_database_migration::{Migrator, MigratorTrait};
 use dirs::config_dir;
-use std::error::Error;
+use prsqlite::Connection;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
-/// # Errors
-/// Database errors are returned as a `DbErr` enum.
-/// # Panics
-/// Panics if the database connection fails.
-pub async fn initialize() -> Result<(), anyhow::Error> {
-    println!("Initializing database");
-    // Apply all pending migrations
-    create_theme_table().await?;
-    // Initialize your tables
-    println!("Successfully created tables");
-    Ok(())
-}
 /// # Panics
 /// Panics if the either the file creation failes or the `config_dir()` function fails.
 /// # Errors
@@ -52,7 +36,7 @@ pub fn db_string() -> Result<String, io::Error> {
 
 /// # Errors
 /// Database errors are returned as a `Error` enum
-pub async fn get_connection() -> Result<Connection, anyhow::Error> {
+pub fn get_connection() -> Result<Connection, anyhow::Error> {
     let db_string = db_string()?;
 
     match Connection::open(Path::new(&db_string)) {
