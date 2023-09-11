@@ -22,13 +22,35 @@ use crate::bindings::theme::{create_theme_table, populate_theme_table};
 use crate::bindings::chart_kind::{create_chartkind_table, populate_chartkind_table};
 use chartcharm_database::set_is_db_populated;
 use tauri::Builder;
+extern crate log;
+
+use log::{debug, Level, LevelFilter, Log, Metadata, Record};
+use std::env;
+
+struct SimpleLogger;
+
+impl Log for SimpleLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= Level::Info
+    }
+
+    fn log(&self, record: &Record) {
+        if self.enabled(record.metadata()) {
+            println!("{} - {}", record.level(), record.args());
+        }
+    }
+
+    fn flush(&self) {}
+}
+
+static LOGGER: SimpleLogger = SimpleLogger;
 
 /// # Errors
 /// Database errors are returned as a `DbErr` enum.
 /// # Panics
 /// Panics if the database connection fails.
 pub fn initialize() -> Result<(), anyhow::Error> {
-    println!("Initializing database");
+    debug!("Initializing database");
     // Apply all pending migrations
     create_theme_table()?;
     create_chartkind_table()?;
@@ -37,20 +59,36 @@ pub fn initialize() -> Result<(), anyhow::Error> {
     create_datapoints_table()?;
     create_settings_table()?;
     // Initialize your tables
-    println!("Successfully created tables");
+    debug!("Successfully created tables");
     populate_settings_table()?;
     populate_theme_table()?;
     populate_chartkind_table()?;
     set_is_db_populated(true)?;
-    println!("Successfully populated tables");
+    debug!("Successfully populated tables");
     Ok(())
 }
 
 #[async_std::main]
 async fn main() {
-    println!("Starting Tauri application");
+    // Read environment variable and set log level
+    let log_level = env::var("LOGLEVEL").unwrap_or_else(|_| "Info".to_string());
+    let level_filter = match log_level.to_uppercase().as_str() {
+        "OFF" => LevelFilter::Off,
+        "ERROR" => LevelFilter::Error,
+        "WARN" => LevelFilter::Warn,
+        "INFO" => LevelFilter::Info,
+        "DEBUG" => LevelFilter::Debug,
+        "TRACE" => LevelFilter::Trace,
+        _ => LevelFilter::Info, // Default is Info
+    };
+
+    log::set_logger(&LOGGER)
+        .map(|()| log::set_max_level(level_filter))
+        .unwrap();
+
+    log::info!("Starting Tauri application");
     if let Err(e) = crate::initialize() {
-        eprintln!("Failed to initialize the database: {}", e);
+        log::error!("Failed to initialize the database: {}", e);
     }
 
     Builder::default()

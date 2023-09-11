@@ -1,6 +1,7 @@
 use chartcharm_database::{get_connection, is_db_populated};
 use chartcharm_shared::chart::{Chart, ChartError};
 use chrono::prelude::*;
+use log::debug;
 use rusqlite::{params, Result};
 
 pub fn create_charts_table() -> Result<(), ChartError> {
@@ -16,6 +17,7 @@ pub fn create_charts_table() -> Result<(), ChartError> {
     if is_db_populated() {
         return Ok(());
     } else {
+        debug!("Creating chart table");
         match conn.execute(
             "CREATE TABLE IF NOT EXISTS charts (
             id INTEGER PRIMARY KEY,

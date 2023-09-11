@@ -1,6 +1,7 @@
 use chartcharm_database::{get_connection, is_db_populated};
 use chartcharm_shared::data_point::{DataPoint, DataPointError};
 use chrono::prelude::*;
+use log::debug;
 use rusqlite::{params, Result};
 
 pub fn create_datapoints_table() -> Result<(), DataPointError> {
@@ -16,6 +17,7 @@ pub fn create_datapoints_table() -> Result<(), DataPointError> {
     if is_db_populated() {
         return Ok(());
     } else {
+        debug!("Creating data_points table");
         conn.execute(
             "CREATE TABLE IF NOT EXISTS data_points (
             id INTEGER PRIMARY KEY,

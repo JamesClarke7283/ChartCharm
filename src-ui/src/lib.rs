@@ -41,7 +41,7 @@ use tauri_sys::tauri;
 pub fn App() -> impl IntoView {
     // Create action to query theme
     let init_theme = create_action(move |_| async move {
-        match tauri::invoke::<(), String>("query_theme", &()).await {
+        match tauri::invoke::<(), String>("query_settings_theme", &()).await {
             Ok(retrieved_theme) => {
                 set_displayed_theme(&retrieved_theme); // Replace with your actual function to set theme
             }

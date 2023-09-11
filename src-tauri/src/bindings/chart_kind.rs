@@ -1,5 +1,6 @@
 use chartcharm_database::{get_connection, is_db_populated};
 use chartcharm_shared::chart_kind::ChartKindError;
+use log::debug;
 use rusqlite::{params, Result};
 
 pub fn populate_chartkind_table() -> Result<(), ChartKindError> {
@@ -15,6 +16,7 @@ pub fn populate_chartkind_table() -> Result<(), ChartKindError> {
     if is_db_populated() {
         return Ok(());
     } else {
+        debug!("Populating chart_kind table");
         conn.execute(
             "INSERT INTO chart_kind (name) VALUES (?1);",
             params!["line"],
@@ -38,7 +40,7 @@ pub fn create_chartkind_table() -> Result<(), ChartKindError> {
     if is_db_populated() {
         return Ok(());
     } else {
-        println!("Creating chart_kind table");
+        debug!("Creating chart_kind table");
 
         conn.execute(
             "CREATE TABLE IF NOT EXISTS chart_kind (

@@ -1,5 +1,6 @@
 use chartcharm_database::{get_connection, is_db_populated, rusqlite_to_string};
 use chartcharm_shared::theme::ThemeError;
+use log::debug;
 use rusqlite::params;
 
 pub fn populate_theme_table() -> Result<(), ThemeError> {
@@ -9,6 +10,7 @@ pub fn populate_theme_table() -> Result<(), ThemeError> {
     if is_db_populated() {
         return Ok(());
     } else {
+        debug!("Populating theme table");
         conn.execute(
             "INSERT INTO theme (name) VALUES (?1), (?2), (?3)",
             params!["auto", "light", "dark"],

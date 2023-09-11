@@ -1,6 +1,7 @@
 use chartcharm_database::{get_connection, is_db_populated, rusqlite_to_string};
 use chartcharm_shared::project::{Project, ProjectError};
 use chrono::prelude::*;
+use log::debug;
 use rusqlite::{params, Result};
 
 pub fn create_projects_table() -> Result<(), ProjectError> {
@@ -16,6 +17,7 @@ pub fn create_projects_table() -> Result<(), ProjectError> {
     if is_db_populated() {
         return Ok(());
     } else {
+        debug!("Creating projects table");
         conn.execute(
             "CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY,

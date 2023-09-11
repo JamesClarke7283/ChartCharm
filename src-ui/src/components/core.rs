@@ -29,7 +29,7 @@ pub struct DelProjectCmdArgs {
 
 #[derive(Serialize)]
 pub struct UpdateThemeCmdArgs {
-    pub theme: String,
+    pub themeId: String,
 }
 
 #[derive(Serialize)]
@@ -55,7 +55,7 @@ pub fn Sidebar() -> impl IntoView {
     let theme = create_rw_signal(String::new());
 
     let query_theme = create_action(move |_| async move {
-        match tauri::invoke::<(), String>("query_theme", &()).await {
+        match tauri::invoke::<(), String>("query_settings_theme", &()).await {
             Ok(retrieved_theme) => {
                 theme.set(retrieved_theme.clone());
                 set_displayed_theme(&theme.get());
@@ -78,8 +78,10 @@ pub fn Sidebar() -> impl IntoView {
 
     let update_theme = create_action(move |_| async move {
         match tauri::invoke::<UpdateThemeCmdArgs, ()>(
-            "update_theme",
-            &UpdateThemeCmdArgs { theme: theme.get() },
+            "update_settings_theme",
+            &UpdateThemeCmdArgs {
+                themeId: theme.get(),
+            },
         )
         .await
         {

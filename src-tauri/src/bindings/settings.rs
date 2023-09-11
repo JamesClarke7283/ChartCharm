@@ -1,5 +1,6 @@
 use chartcharm_database::{get_connection, is_db_populated};
 use chartcharm_shared::settings::{Setting, SettingsError};
+use log::debug;
 use rusqlite::{params, Result};
 
 pub fn create_settings_table() -> Result<(), SettingsError> {
@@ -8,6 +9,7 @@ pub fn create_settings_table() -> Result<(), SettingsError> {
     if is_db_populated() {
         return Ok(());
     } else {
+        debug!("Creating settings table");
         conn.execute(
             "CREATE TABLE IF NOT EXISTS settings (
             id INTEGER PRIMARY KEY,
@@ -27,6 +29,7 @@ pub fn populate_settings_table() -> Result<(), SettingsError> {
     if is_db_populated() {
         return Ok(());
     } else {
+        debug!("Populating settings table");
         conn.execute(
             "INSERT INTO settings (name, value) VALUES ('theme_selected', '1');",
             params![],
