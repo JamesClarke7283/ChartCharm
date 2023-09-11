@@ -1,4 +1,4 @@
-use chartcharm_database::get_connection;
+use chartcharm_database::{get_connection, is_db_populated};
 use chartcharm_shared::data_point::{DataPoint, DataPointError};
 use chrono::prelude::*;
 use rusqlite::{params, Result};
@@ -13,9 +13,11 @@ pub fn create_datapoints_table() -> Result<(), DataPointError> {
             ))
         }
     };
-
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS data_points (
+    if is_db_populated() {
+        return Ok(());
+    } else {
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS data_points (
             id INTEGER PRIMARY KEY,
             project INTEGER NOT NULL,
             data REAL NOT NULL,
@@ -23,10 +25,11 @@ pub fn create_datapoints_table() -> Result<(), DataPointError> {
             updated_at INTEGER NOT NULL,
             FOREIGN KEY (project) REFERENCES projects(id)
         );",
-        params![],
-    )
-    .map_err(|e| DataPointError::CreateError(e.to_string()))?;
-    Ok(())
+            params![],
+        )
+        .map_err(|e| DataPointError::CreateError(e.to_string()))?;
+        Ok(())
+    }
 }
 
 #[tauri::command]

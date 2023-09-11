@@ -1,5 +1,3 @@
-use std::error;
-
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -19,4 +17,11 @@ pub enum SettingsError {
     DeleteError(String),
     #[error("Failed to insert setting: {0}")]
     InsertError(String),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Setting {
+    pub id: u16,
+    pub name: String,
+    pub value: String,
 }

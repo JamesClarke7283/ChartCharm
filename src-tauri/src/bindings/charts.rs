@@ -1,4 +1,4 @@
-use chartcharm_database::get_connection;
+use chartcharm_database::{get_connection, is_db_populated};
 use chartcharm_shared::chart::{Chart, ChartError};
 use chrono::prelude::*;
 use rusqlite::{params, Result};
@@ -13,8 +13,11 @@ pub fn create_charts_table() -> Result<(), ChartError> {
             ))
         }
     };
-    match conn.execute(
-        "CREATE TABLE IF NOT EXISTS charts (
+    if is_db_populated() {
+        return Ok(());
+    } else {
+        match conn.execute(
+            "CREATE TABLE IF NOT EXISTS charts (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             description TEXT NOT NULL,
@@ -25,14 +28,15 @@ pub fn create_charts_table() -> Result<(), ChartError> {
             FOREIGN KEY (project) REFERENCES projects(id),
             FOREIGN KEY (kind) REFERENCES chart_kind(id)
         );",
-        params![],
-    ) {
-        Ok(_) => (),
-        Err(e) => {
-            return Err(ChartError::CreateError(e.to_string()));
-        }
-    };
-    Ok(())
+            params![],
+        ) {
+            Ok(_) => (),
+            Err(e) => {
+                return Err(ChartError::CreateError(e.to_string()));
+            }
+        };
+        Ok(())
+    }
 }
 
 #[tauri::command]

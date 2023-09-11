@@ -20,6 +20,7 @@ use crate::bindings::settings::{
 use crate::bindings::theme::{create_theme_table, populate_theme_table};
 
 use crate::bindings::chart_kind::{create_chartkind_table, populate_chartkind_table};
+use chartcharm_database::set_is_db_populated;
 use tauri::Builder;
 
 /// # Errors
@@ -37,9 +38,10 @@ pub fn initialize() -> Result<(), anyhow::Error> {
     create_settings_table()?;
     // Initialize your tables
     println!("Successfully created tables");
+    populate_settings_table()?;
     populate_theme_table()?;
     populate_chartkind_table()?;
-    populate_settings_table()?;
+    set_is_db_populated(true)?;
     println!("Successfully populated tables");
     Ok(())
 }

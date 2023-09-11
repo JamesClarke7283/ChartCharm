@@ -1,4 +1,4 @@
-use chartcharm_database::get_connection;
+use chartcharm_database::{get_connection, is_db_populated};
 use chartcharm_shared::chart_kind::ChartKindError;
 use rusqlite::{params, Result};
 
@@ -12,14 +12,17 @@ pub fn populate_chartkind_table() -> Result<(), ChartKindError> {
             ))
         }
     };
+    if is_db_populated() {
+        return Ok(());
+    } else {
+        conn.execute(
+            "INSERT INTO chart_kind (name) VALUES (?1);",
+            params!["line"],
+        )
+        .map_err(|e| ChartKindError::InsertError(e.to_string()))?;
 
-    conn.execute(
-        "INSERT INTO chart_kind (name) VALUES (?1);",
-        params!["line"],
-    )
-    .map_err(|e| ChartKindError::InsertError(e.to_string()))?;
-
-    Ok(())
+        Ok(())
+    }
 }
 
 pub fn create_chartkind_table() -> Result<(), ChartKindError> {
@@ -32,17 +35,22 @@ pub fn create_chartkind_table() -> Result<(), ChartKindError> {
             ))
         }
     };
+    if is_db_populated() {
+        return Ok(());
+    } else {
+        println!("Creating chart_kind table");
 
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS chart_kind (
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS chart_kind (
             id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL
+            name TEXT NOT NULL UNIQUE
         );",
-        params![],
-    )
-    .map_err(|e| ChartKindError::CreateError(e.to_string()))?;
+            params![],
+        )
+        .map_err(|e| ChartKindError::CreateError(e.to_string()))?;
 
-    Ok(())
+        Ok(())
+    }
 }
 
 #[tauri::command]

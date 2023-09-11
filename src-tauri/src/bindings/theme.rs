@@ -1,43 +1,53 @@
-use chartcharm_database::{get_connection, rusqlite_to_string};
+use chartcharm_database::{get_connection, is_db_populated, rusqlite_to_string};
 use chartcharm_shared::theme::ThemeError;
 use rusqlite::params;
 
 pub fn populate_theme_table() -> Result<(), ThemeError> {
-    let db = get_connection()
+    let conn = get_connection()
         .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
-    db.execute(
-        "INSERT INTO theme (name) VALUES (?1), (?2), (?3)",
-        params!["auto", "light", "dark"],
-    )
-    .map_err(|e| ThemeError::InsertError(e.to_string()))?;
-    Ok(())
+
+    if is_db_populated() {
+        return Ok(());
+    } else {
+        conn.execute(
+            "INSERT INTO theme (name) VALUES (?1), (?2), (?3)",
+            params!["auto", "light", "dark"],
+        )
+        .map_err(|e| ThemeError::InsertError(e.to_string()))?;
+        Ok(())
+    }
 }
 
 pub fn create_theme_table() -> Result<(), ThemeError> {
-    let db = get_connection()
+    let conn = get_connection()
         .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
-    db.execute(
-        "CREATE TABLE IF NOT EXISTS theme (id INTEGER PRIMARY KEY, name TEXT NOT NULL)",
-        [],
-    )
-    .map_err(|e| ThemeError::CreateTableError(e.to_string()))?;
-    Ok(())
+    if is_db_populated() {
+        return Ok(());
+    } else {
+        println!("Creating theme table");
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS theme (id INTEGER PRIMARY KEY, name TEXT NOT NULL)",
+            [],
+        )
+        .map_err(|e| ThemeError::CreateTableError(e.to_string()))?;
+        Ok(())
+    }
 }
 
 #[tauri::command]
 pub fn insert_theme(name: &str) -> Result<(), ThemeError> {
-    let db = get_connection()
+    let conn = get_connection()
         .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
-    db.execute("INSERT INTO theme (name) VALUES (?1)", params![name])
+    conn.execute("INSERT INTO theme (name) VALUES (?1)", params![name])
         .map_err(|e| ThemeError::InsertError(e.to_string()))?;
     Ok(())
 }
 
 #[tauri::command]
 pub fn query_theme(id: u8) -> Result<String, ThemeError> {
-    let db =
+    let conn =
         get_connection().map_err(|e| ThemeError::ConnectionError(id.to_string(), e.to_string()))?;
-    let mut stmt = db
+    let mut stmt = conn
         .prepare("SELECT name FROM theme WHERE id = ?1")
         .map_err(|e| ThemeError::RetrieveError(e.to_string()))?;
 
