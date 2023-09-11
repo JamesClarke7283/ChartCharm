@@ -35,6 +35,14 @@ cargo install --locked wasm-bindgen-cli
 # `esbuild` as dependency of `tauri-sys` crate (used in UI)
 npm install --global --save-exact esbuild
 ```
+# Environment Variables
+
+| Name | Description | Default Value |
+| --- | --- | --- |
+| `LOGLEVEL` | Sets the log level for the program(INFO,WARN,ERROR,DEBUG,TRACE) | `Info` |
+
+
+
 
 # License
     This file is part of ChartCharm.
