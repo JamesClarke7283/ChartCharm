@@ -1,6 +1,5 @@
 use crate::get_connection;
-use chartcharm_shared::theme::{Theme, ThemeError};
-use prsqlite::{Buffer, Connection, Value};
+use chartcharm_shared::theme::ThemeError;
 
 pub async fn create_table() -> Result<(), ThemeError> {
     let mut db = get_connection()
@@ -22,7 +21,7 @@ pub async fn insert_theme(name: &str) -> Result<(), ThemeError> {
         .await
         .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
     let mut stmt = db
-        .prepare("INSERT INTO theme (name) VALUES (?);")
+        .prepare(&format!("INSERT INTO theme (name) VALUES ({});", name))
         .map_err(|e| ThemeError::InsertError(e.to_string()))?;
 
     stmt.execute()
@@ -30,7 +29,7 @@ pub async fn insert_theme(name: &str) -> Result<(), ThemeError> {
     Ok(())
 }
 
-pub async fn query_theme<'a>(id: u8) -> Result<String, ThemeError> {
+pub async fn query_theme(id: u8) -> Result<String, ThemeError> {
     let mut db = match get_connection().await {
         Ok(db) => db,
         Err(e) => {
@@ -47,7 +46,7 @@ pub async fn query_theme<'a>(id: u8) -> Result<String, ThemeError> {
         }
     };
 
-    let rows = match stmt.execute() {
+    let mut rows = match stmt.execute() {
         Ok(rows) => rows,
         Err(e) => {
             println!("Failed to execute theme query statement: {:?}", e);
@@ -57,7 +56,7 @@ pub async fn query_theme<'a>(id: u8) -> Result<String, ThemeError> {
 
     let row = rows.next_row().unwrap().unwrap();
 
-    let mut columns = match row.parse() {
+    let columns = match row.parse() {
         Ok(columns) => columns,
         Err(e) => {
             println!("Failed to get theme query statement columns: {:?}", e);
@@ -67,14 +66,8 @@ pub async fn query_theme<'a>(id: u8) -> Result<String, ThemeError> {
 
     let value_option = columns.get(0); // This is of type Option<&Value>
 
-    if let Some(value) = value_option {
-        let buffer: Buffer<'a> = value.force_text_buffer();
-        let slice: &[u8] = &buffer;
-        match std::str::from_utf8(slice) {
-            Ok(s) => Ok(s.to_string()),
-            Err(_) => Err(ThemeError::DecodeError),
-        }
-    } else {
-        Err(ThemeError::RetrieveError("No theme found".to_string()))
+    match value_option.as_string() {
+        Some(s) => Ok(s),
+        None => Err(ThemeError::DecodeError),
     }
 }
