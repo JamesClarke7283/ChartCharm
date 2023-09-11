@@ -1,203 +1,189 @@
-use chartcharm_database::get_connection;
-use chartcharm_database::models::charts;
-use chartcharm_shared::chart::Chart;
-use chartcharm_shared::chart::ChartError;
-use chrono::Utc;
-use sea_orm::entity::prelude::*;
-use sea_orm::Set;
+use chartcharm_database::{get_connection, rusqlite_to_string};
+use chartcharm_shared::chart::{Chart, ChartError};
+use chrono::prelude::*;
+use rusqlite::{params, Connection, Result, Row};
 
-#[tauri::command]
-pub async fn list_charts() -> Result<Vec<Chart>, ChartError> {
-    println!("list_charts function called");
-
-    let conn = match get_connection().await {
+pub fn create_charts_table() -> Result<(), ChartError> {
+    let conn = match get_connection() {
         Ok(conn) => conn,
         Err(e) => {
-            println!("Failed to get database connection: {e:?}");
             return Err(ChartError::ConnectionError(
+                "N/A".to_string(),
                 e.to_string(),
-                "all".to_string(),
-            ));
+            ))
         }
     };
-
-    println!("Got connection");
-
-    let charts = match charts::Entity::find().all(&conn).await {
-        Ok(charts) => charts,
-        Err(e) => {
-            println!("Failed to get charts: {e:?}");
-            return Err(ChartError::RetrieveError(e.to_string()));
-        }
-    };
-
-    let charts = charts
-        .into_iter()
-        .map(|chart| Chart {
-            id: chart.id,
-            name: chart.name,
-            description: chart.description,
-            project: chart.project,
-            kind: chart.kind,
-            created_at: chart.created_at,
-            updated_at: chart.updated_at,
-        })
-        .collect();
-
-    println!("Retrieved charts: {charts:?}");
-
-    Ok(charts)
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS charts (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            project INTEGER NOT NULL,
+            kind INTEGER NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL,
+            FOREIGN KEY (project) REFERENCES projects(id),
+            FOREIGN KEY (kind) REFERENCES chart_kind(id)
+        );",
+        params![],
+    );
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn query_chart(id: u16) -> Result<Chart, ChartError> {
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(ChartError::ConnectionError(e.to_string(), id.to_string()));
-        }
-    };
-
-    println!("Got connection");
-
-    match charts::Entity::find_by_id(id).one(&conn).await {
-        Ok(chart) => match chart {
-            Some(chart) => {
-                println!("Retrieved chart: {chart:?}");
-                Ok(Chart {
-                    id: chart.id,
-                    name: chart.name,
-                    description: chart.description,
-                    project: chart.project,
-                    kind: chart.kind,
-                    created_at: chart.created_at,
-                    updated_at: chart.updated_at,
-                })
-            }
-            None => {
-                println!("No chart found with id: {id}");
-                return Err(ChartError::RetrieveError(id.to_string()));
-            }
-        },
-        Err(e) => {
-            println!("Failed to retrieve chart: {e:?}");
-            return Err(ChartError::RetrieveError(e.to_string()));
-        }
-    }
-}
-
-#[tauri::command]
-pub async fn add_chart(
+pub fn add_chart(
     name: String,
     description: String,
     project_id: u16,
     kind_id: u8,
 ) -> Result<(), ChartError> {
-    let conn = match get_connection().await {
+    let conn = match get_connection() {
         Ok(conn) => conn,
         Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(ChartError::ConnectionError(e.to_string(), name.to_string()));
+            return Err(ChartError::ConnectionError(
+                "N/A".to_string(),
+                e.to_string(),
+            ))
+        }
+    };
+    conn.execute(
+        "INSERT INTO charts (name, description, project, kind, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6);",
+        params![
+            name,
+            description,
+            project_id,
+            kind_id,
+            Utc::now().timestamp(),
+            Utc::now().timestamp()
+        ],
+    );
+    Ok(())
+}
+
+#[tauri::command]
+pub fn list_charts() -> Result<Vec<Chart>, ChartError> {
+    let conn = match get_connection() {
+        Ok(conn) => conn,
+        Err(e) => {
+            return Err(ChartError::ConnectionError(
+                "N/A".to_string(),
+                e.to_string(),
+            ))
+        }
+    };
+    let mut stmt = match conn.prepare("SELECT * FROM charts;") {
+        Ok(stmt) => stmt,
+        Err(e) => {
+            return Err(ChartError::RetrieveError(e.to_string()));
+        }
+    };
+    let charts_iter = match stmt.query_map(params![], |row| {
+        Ok(Chart {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            description: row.get(2)?,
+            project: row.get(3)?,
+            kind: row.get(4)?,
+            created_at: Utc.timestamp(row.get(5)?, 0),
+            updated_at: Utc.timestamp(row.get(6)?, 0),
+        })
+    }) {
+        Ok(rows) => rows,
+        Err(e) => {
+            return Err(ChartError::RetrieveError(e.to_string()));
         }
     };
 
-    println!("Got connection");
+    let mut charts = Vec::new();
+    for chart in charts_iter {
+        match chart {
+            Ok(chart) => charts.push(chart),
+            Err(e) => {
+                return Err(ChartError::RetrieveError(e.to_string()));
+            }
+        }
+    }
+    Ok(charts)
+}
 
-    let chart = charts::ActiveModel {
-        name: Set(name.to_owned()),
-        description: Set(description.to_owned()),
-        project: Set(project_id),
-        kind: Set(kind_id),
-        created_at: Set(Utc::now()),
-        updated_at: Set(Utc::now()),
-        ..Default::default()
+#[tauri::command]
+pub fn query_chart(id: u16) -> Result<Chart, ChartError> {
+    let conn = match get_connection() {
+        Ok(conn) => conn,
+        Err(e) => {
+            return Err(ChartError::ConnectionError(
+                "N/A".to_string(),
+                e.to_string(),
+            ))
+        }
     };
-
-    let chart = match chart.insert(&conn).await {
+    let mut stmt = match conn.prepare("SELECT * FROM charts WHERE id = ?1;") {
+        Ok(stmt) => stmt,
+        Err(e) => {
+            return Err(ChartError::RetrieveError(e.to_string()));
+        }
+    };
+    let chart = match stmt.query_row(params![id], |row| {
+        Ok(Chart {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            description: row.get(2)?,
+            project: row.get(3)?,
+            kind: row.get(4)?,
+            created_at: Utc.timestamp(row.get(5)?, 0),
+            updated_at: Utc.timestamp(row.get(6)?, 0),
+        })
+    }) {
         Ok(chart) => chart,
         Err(e) => {
-            println!("Failed to insert chart: {e:?}");
             return Err(ChartError::RetrieveError(e.to_string()));
         }
     };
-
-    println!("Inserted chart: {chart:?}");
-
-    Ok(())
+    Ok(chart)
 }
 
 #[tauri::command]
-pub async fn delete_chart(id: u16) -> Result<(), ChartError> {
-    let conn = match get_connection().await {
+pub fn delete_chart(id: u16) -> Result<(), ChartError> {
+    let conn = match get_connection() {
         Ok(conn) => conn,
         Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(ChartError::ConnectionError(e.to_string(), id.to_string()));
+            return Err(ChartError::ConnectionError(
+                "N/A".to_string(),
+                e.to_string(),
+            ))
         }
     };
-
-    println!("Got connection");
-
-    match charts::Entity::delete_by_id(id).exec(&conn).await {
-        Ok(_) => {}
-        Err(e) => {
-            println!("Failed to delete chart: {e:?}");
-            return Err(ChartError::RetrieveError(e.to_string()));
-        }
-    };
-
-    println!("Deleted chart with id: {id}");
-
+    conn.execute("DELETE FROM charts WHERE id = ?1;", params![id]);
     Ok(())
 }
 
 #[tauri::command]
-pub async fn update_chart(
+pub fn update_chart(
     id: u16,
     name: String,
     description: String,
     project_id: u16,
     kind_id: u8,
 ) -> Result<(), ChartError> {
-    let conn = match get_connection().await {
+    let conn = match get_connection() {
         Ok(conn) => conn,
         Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(ChartError::ConnectionError(e.to_string(), name.to_string()));
+            return Err(ChartError::ConnectionError(
+                "N/A".to_string(),
+                e.to_string(),
+            ))
         }
     };
-
-    println!("Got connection");
-    let chart = match charts::Entity::find_by_id(id).one(&conn).await {
-        Ok(chart) => match chart {
-            Some(chart) => chart,
-            None => {
-                println!("No chart found with id: {id}");
-                return Err(ChartError::RetrieveError(id.to_string()));
-            }
-        },
-        Err(e) => {
-            println!("Failed to retrieve chart: {e:?}");
-            return Err(ChartError::RetrieveError(e.to_string()));
-        }
-    };
-    let mut chart: charts::ActiveModel = chart.into();
-
-    chart.name = Set(name.to_owned());
-    chart.description = Set(description.to_owned());
-    chart.project = Set(project_id);
-    chart.kind = Set(kind_id);
-    chart.updated_at = Set(Utc::now());
-
-    match chart.update(&conn).await {
-        Ok(_) => {}
-        Err(e) => {
-            println!("Failed to update chart: {e:?}");
-            return Err(ChartError::ConnectionError(e.to_string(), id.to_string()));
-        }
-    };
-
-    println!("Updated chart with id: {id}");
+    conn.execute(
+        "UPDATE charts SET name = ?1, description = ?2, project = ?3, kind = ?4, updated_at = ?5 WHERE id = ?6;",
+        params![
+            name,
+            description,
+            project_id,
+            kind_id,
+            Utc::now().timestamp(),
+            id
+        ],
+    );
     Ok(())
 }

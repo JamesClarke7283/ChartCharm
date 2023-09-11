@@ -14,13 +14,17 @@ pub enum DataPointError {
     DeleteError(String),
     #[error("Failed to update datapoint: {0}")]
     UpdateError(String),
+    #[error("Failed to decode datapoint")]
+    DecodeError,
+    #[error("Failed to create datapoint: {0}")]
+    CreateError(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct DataPoint {
     pub id: u64,
     pub project: u16,
-    pub data: f64,
+    pub data: f32,
     pub created_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,
 }

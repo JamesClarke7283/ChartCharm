@@ -1,9 +1,12 @@
-use crate::components::core::{ListDataPointsCmdArgs, QueryProjectCmdArgs, Sidebar};
+use crate::components::core::{
+    AddDataPointCmdArgs, ListDataPointsCmdArgs, QueryProjectCmdArgs, Sidebar,
+};
 use crate::contexts::modal_controller::use_modal_controller;
 use chartcharm_shared::data_point::DataPoint;
 use chrono::Utc;
 use leptos::{
-    component, create_resource, tracing, view, warn, For, IntoView, SignalGet, SignalWith, Suspense,
+    component, create_action, create_resource, create_rw_signal, event_target_value, tracing, view,
+    warn, For, IntoView, RwSignal, SignalGet, SignalSet, SignalWith, Suspense,
 };
 use leptos_router::*;
 use log::info;
@@ -179,12 +182,59 @@ pub fn ListDatapoints(project_id: u16) -> impl IntoView {
 
 #[component]
 pub fn EditDatapoints(project_id: u16) -> impl IntoView {
-    //let modal = use_modal_controller();
+    let modal = use_modal_controller();
     view! {
         <div id="edit-datapoints-modal" class="modal">
             <div class="modal-content">
             <h1>"Edit Datapoints"</h1>
             <ListDatapoints project_id=project_id/>
+            <button class="pico-btn pico-btn-icon" id="edit-datapoints-add-button" on:click=move |_| {
+                modal.close();
+                modal.open(view!{ <AddDatapoint project=project_id/>});
+            }>
+                <i class="fa fa-plus" aria-hidden="true"></i>
+            </button>
+            </div>
+        </div>
+    }
+}
+
+#[component]
+pub fn AddDatapoint(project: u16) -> impl IntoView {
+    let modal = use_modal_controller();
+    let data: RwSignal<f32> = create_rw_signal(0.0);
+    let add_datapoint = create_action(move |_: &()| async move {
+        tauri::invoke::<_, ()>(
+            "add_datapoint",
+            &AddDataPointCmdArgs {
+                project: project,
+                data: data.get(),
+            },
+        )
+        .await
+        .unwrap_or_else(|e| {
+            warn!("Failed to call add_datapoint: {}", e);
+        });
+    });
+    view! {
+        <div id="add-datapoint-modal" class="modal">
+            <div class="modal-content">
+            <h1>"Add Datapoint"</h1>
+                <form id="add-datapoint-form" on:submit=move |ev| {
+                    ev.prevent_default();
+                    add_datapoint.dispatch(());
+                    modal.close()
+                }>
+                    <label for="datapoint-data">Data</label>
+                    <input type="number" step=".01" id="datapoint-data" name="datapoint-data" placeholder="Numerical Data" on:input=move|ev|{
+                        let d = match event_target_value(&ev).parse::<f32>(){
+                            Ok(d) => d,
+                            Err(_) => 0.0,
+                        };
+                        data.set(d);
+                    } required/>
+                    <button class="pico-btn pico-btn-primary" id="add-datapoint-submit-button" type="submit">Submit</button>
+                </form>
             </div>
         </div>
     }

@@ -1,9 +1,3 @@
 [workspace]
-members = [
-    "src-tauri",
-    "src-ui",
-    "src-db",
-    "src-migrations",
-    "src-shared",
-]
+members = ["src-tauri", "src-ui", "src-db", "src-shared"]
 resolver = "2"

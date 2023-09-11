@@ -1,23 +1,8 @@
-use sea_orm::Database;
-use sea_orm::DatabaseConnection;
-pub mod models;
-use chartcharm_database_migration::{Migrator, MigratorTrait};
 use dirs::config_dir;
-use std::error::Error;
+use prsqlite::Connection;
 use std::io::{self, ErrorKind};
+use std::path::Path;
 
-/// # Errors
-/// Database errors are returned as a `DbErr` enum.
-/// # Panics
-/// Panics if the database connection fails.
-pub async fn initialize(db: &DatabaseConnection) -> Result<(), sea_orm::error::DbErr> {
-    println!("Initializing database");
-    // Apply all pending migrations
-    Migrator::up(db, None).await?;
-    // Initialize your tables
-    println!("Successfully created tables");
-    Ok(())
-}
 /// # Panics
 /// Panics if the either the file creation failes or the `config_dir()` function fails.
 /// # Errors
@@ -51,23 +36,14 @@ pub fn db_string() -> Result<String, io::Error> {
 
 /// # Errors
 /// Database errors are returned as a `Error` enum
-pub async fn get_connection() -> Result<DatabaseConnection, Box<dyn Error>> {
+pub fn get_connection() -> Result<Connection, anyhow::Error> {
     let db_string = db_string()?;
-    match Database::connect(&db_string).await {
+
+    match Connection::open(Path::new(&db_string)) {
         Ok(db) => Ok(db),
         Err(e) => {
             eprintln!("Failed to connect to database: {e:?}");
-            Err(Box::new(e))
+            Err(e)
         }
     }
-}
-
-/// # Errors
-/// Database errors are returned as a `DbErr` enum.
-pub async fn init_db() -> Result<(), Box<dyn Error>> {
-    let db = get_connection().await?;
-    eprintln!("Successfully connected to database");
-    initialize(&db).await?;
-    eprintln!("Successfully initialized database");
-    Ok(())
 }

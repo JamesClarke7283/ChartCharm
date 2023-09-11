@@ -1,207 +1,175 @@
-use chartcharm_database::get_connection;
-use chartcharm_database::models::projects;
+use chartcharm_database::{get_connection, rusqlite_to_string};
 use chartcharm_shared::project::{Project, ProjectError};
-use chrono::Utc;
-use sea_orm::entity::prelude::*;
-use sea_orm::Set;
+use chrono::prelude::*;
+use rusqlite::{params, Connection, Result, Row};
 
-/// # Errors
-/// Database errors are returned as a `DbErr` enum.
-#[tauri::command]
-pub async fn add_project(name: &str, description: &str) -> Result<(), ProjectError> {
-    println!("add_project function called");
-
-    let conn = match get_connection().await {
+pub fn create_projects_table() -> Result<(), ProjectError> {
+    let conn = match get_connection() {
         Ok(conn) => conn,
         Err(e) => {
-            println!("Failed to get database connection: {e:?}");
+            return Err(ProjectError::ConnectionError(
+                "N/A".to_string(),
+                e.to_string(),
+            ))
+        }
+    };
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
+        );",
+        params![],
+    )
+    .map_err(|e| ProjectError::CreateError(e.to_string()))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn add_project(name: &str, description: &str) -> Result<(), ProjectError> {
+    let conn = match get_connection() {
+        Ok(conn) => conn,
+        Err(e) => {
             return Err(ProjectError::ConnectionError(
                 e.to_string(),
                 name.to_string(),
-            ));
+            ))
         }
     };
 
-    println!("Got connection");
-
-    let project = projects::ActiveModel {
-        name: Set(name.to_string()),
-        description: Set(description.to_string()),
-        created_at: Set(Utc::now()),
-        updated_at: Set(Utc::now()),
-        ..Default::default()
-    };
-
-    match project.insert(&conn).await {
-        Ok(project) => {
-            println!("Added project: {project:?}");
-            Ok(())
-        }
-        Err(e) => {
-            println!("Failed to insert project: {e:?}");
-            Err(ProjectError::InsertError(e.to_string()))
-        }
-    }
+    conn.execute(
+        "INSERT INTO projects (name, description, created_at, updated_at) VALUES (?1, ?2, ?3, ?4);",
+        params![
+            name,
+            description,
+            Utc::now().timestamp(),
+            Utc::now().timestamp()
+        ],
+    )
+    .map_err(|e| ProjectError::InsertError(e.to_string()))?;
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn list_projects() -> Result<Vec<Project>, ProjectError> {
-    println!("list_projects function called");
+pub fn delete_project(id: u16) -> Result<(), ProjectError> {
+    let conn = match get_connection() {
+        Ok(conn) => conn,
+        Err(e) => return Err(ProjectError::ConnectionError(e.to_string(), id.to_string())),
+    };
 
-    let conn = match get_connection().await {
+    conn.execute("DELETE FROM projects WHERE id = ?1;", params![id])
+        .map_err(|e| ProjectError::DeleteError(e.to_string()))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn edit_project(id: u16, name: &str, description: &str) -> Result<(), ProjectError> {
+    let conn = match get_connection() {
+        Ok(conn) => conn,
+        Err(e) => return Err(ProjectError::ConnectionError(e.to_string(), id.to_string())),
+    };
+
+    conn.execute(
+        "UPDATE projects SET name = ?1, description = ?2, updated_at = ?3 WHERE id = ?4;",
+        params![name, description, Utc::now().timestamp(), id],
+    )
+    .map_err(|e| ProjectError::UpdateError(e.to_string()))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn list_projects() -> Result<Vec<Project>, ProjectError> {
+    let conn = match get_connection() {
         Ok(conn) => conn,
         Err(e) => {
-            println!("Failed to get database connection: {e:?}");
             return Err(ProjectError::ConnectionError(
                 e.to_string(),
                 "all".to_string(),
-            ));
+            ))
         }
     };
 
-    println!("Got connection");
+    let mut stmt = conn
+        .prepare("SELECT * FROM projects;")
+        .map_err(|e| ProjectError::RetrieveError(e.to_string()))?;
 
-    let projects = match projects::Entity::find().all(&conn).await {
-        Ok(projects) => projects,
-        Err(e) => {
-            println!("Failed to retrieve projects: {e:?}");
-            return Err(ProjectError::RetrieveError(e.to_string()));
-        }
-    };
-    let new_projects = projects
-        .into_iter()
-        .map(|project| Project {
-            id: project.id,
-            name: project.name,
-            description: project.description,
-            created_at: project.created_at,
-            updated_at: project.updated_at,
-        })
-        .collect();
+    let mut rows = stmt
+        .query(params![])
+        .map_err(|e| ProjectError::RetrieveError(e.to_string()))?;
 
-    println!("Retrieved projects");
-
-    Ok(new_projects)
-}
-
-#[tauri::command]
-pub async fn delete_project(id: u16) -> Result<(), ProjectError> {
-    println!("delete_project function called");
-
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(ProjectError::ConnectionError(e.to_string(), id.to_string()));
-        }
-    };
-
-    println!("Got connection");
-    // Delete the project with the id passed in
-    let project = match projects::Entity::find_by_id(id).one(&conn).await {
-        Ok(project) => match project {
-            Some(project) => project,
-            None => {
-                println!("Project with id {id} not found");
-                return Err(ProjectError::RetrieveError(id.to_string()));
-            }
-        },
-        Err(e) => {
-            println!("Failed to retrieve project: {e:?}");
-            return Err(ProjectError::RetrieveError(e.to_string()));
-        }
-    };
-    match project.delete(&conn).await {
-        Ok(project) => {
-            println!("Deleted project: {project:?}");
-            return Ok(());
-        }
-        Err(e) => {
-            println!("Failed to delete project: {e:?}");
-            return Err(ProjectError::DeleteError(e.to_string()));
-        }
-    };
-}
-
-#[tauri::command]
-pub async fn edit_project(id: u16, name: &str, description: &str) -> Result<(), ProjectError> {
-    println!("edit_project function called");
-
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(ProjectError::ConnectionError(e.to_string(), id.to_string()));
-        }
-    };
-
-    println!("Got connection");
-
-    let project = match projects::Entity::find_by_id(id).one(&conn).await {
-        Ok(project) => match project {
-            Some(project) => project,
-            None => {
-                println!("Project with id {id} not found");
-                return Err(ProjectError::RetrieveError(id.to_string()));
-            }
-        },
-        Err(e) => {
-            println!("Failed to retrieve project: {e:?}");
-            return Err(ProjectError::RetrieveError(e.to_string()));
-        }
-    };
-    if project.name.is_empty() {
-        println!("Project with id {id} not found");
-        return Err(ProjectError::RetrieveError(id.to_string()));
-    } else {
-        let mut project: projects::ActiveModel = project.into();
-        project.name = Set(name.to_string());
-        project.description = Set(description.to_string());
-        project.updated_at = Set(Utc::now());
-        match project.update(&conn).await {
-            Ok(project) => {
-                println!("Updated project: {project:?}");
-                return Ok(());
-            }
-            Err(e) => {
-                println!("Failed to update project: {e:?}");
-                return Err(ProjectError::UpdateError(e.to_string()));
-            }
+    let mut projects: Vec<Project> = Vec::new();
+    while let Some(row) = rows
+        .next()
+        .map_err(|e| ProjectError::RetrieveError(e.to_string()))?
+    {
+        let id: u16 = match row.get(0) {
+            Ok(id) => id,
+            Err(e) => return Err(ProjectError::RetrieveError(rusqlite_to_string(e))),
         };
+        let name: String = match row.get(1) {
+            Ok(name) => name,
+            Err(e) => return Err(ProjectError::RetrieveError(rusqlite_to_string(e))),
+        };
+        let description: String = match row.get(2) {
+            Ok(description) => description,
+            Err(e) => return Err(ProjectError::RetrieveError(rusqlite_to_string(e))),
+        };
+        let created_at: i64 = match row.get(3) {
+            Ok(created_at) => created_at,
+            Err(e) => return Err(ProjectError::RetrieveError(rusqlite_to_string(e))),
+        };
+        let updated_at: i64 = match row.get(4) {
+            Ok(updated_at) => updated_at,
+            Err(e) => return Err(ProjectError::RetrieveError(rusqlite_to_string(e))),
+        };
+        projects.push(Project {
+            id,
+            name,
+            description,
+            created_at: DateTime::<Utc>::from_utc(
+                NaiveDateTime::from_timestamp(created_at, 0),
+                Utc,
+            ),
+            updated_at: DateTime::<Utc>::from_utc(
+                NaiveDateTime::from_timestamp(updated_at, 0),
+                Utc,
+            ),
+        });
     }
+
+    Ok(projects)
 }
 
 #[tauri::command]
-pub async fn query_project(id: u16) -> Result<Project, ProjectError> {
-    println!("query_project function called");
+pub fn query_project(id: u16) -> Result<Project, ProjectError> {
+    let conn = get_connection()
+        .map_err(|e| ProjectError::ConnectionError(e.to_string(), id.to_string()))?;
 
-    let conn = match get_connection().await {
-        Ok(conn) => conn,
-        Err(e) => {
-            println!("Failed to get database connection: {e:?}");
-            return Err(ProjectError::ConnectionError(e.to_string(), id.to_string()));
-        }
+    let mut stmt = conn
+        .prepare("SELECT * FROM projects WHERE id = ?1;")
+        .map_err(|e| ProjectError::RetrieveError(e.to_string()))?;
+
+    let project = match stmt.query_row(params![id], |row| {
+        Ok(Project {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            description: row.get(2)?,
+            created_at: DateTime::<Utc>::from_utc(
+                NaiveDateTime::from_timestamp(row.get(3)?, 0),
+                Utc,
+            ),
+            updated_at: DateTime::<Utc>::from_utc(
+                NaiveDateTime::from_timestamp(row.get(4)?, 0),
+                Utc,
+            ),
+        })
+    }) {
+        Ok(project) => project,
+        Err(e) => return Err(ProjectError::RetrieveError(e.to_string())),
     };
 
-    println!("Got connection");
-
-    match projects::Entity::find_by_id(id).one(&conn).await {
-        Ok(project) => match project {
-            Some(project) => Ok(Project {
-                id: project.id,
-                name: project.name,
-                description: project.description,
-                created_at: project.created_at,
-                updated_at: project.updated_at,
-            }),
-            None => {
-                println!("Project with id {id} not found");
-                return Err(ProjectError::RetrieveError(id.to_string()));
-            }
-        },
-        Err(e) => {
-            println!("Failed to retrieve project: {e:?}");
-            return Err(ProjectError::RetrieveError(e.to_string()));
-        }
-    }
+    Ok(project)
 }
