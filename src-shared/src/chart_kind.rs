@@ -16,8 +16,8 @@ pub enum ChartKindError {
     UpdateError(String),
     #[error("Failed to decode chart_kind")]
     DecodeError,
-    #[error("Failed to create chart_kind")]
-    CreateError,
+    #[error("Failed to create chart_kind: {0}")]
+    CreateError(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

@@ -16,8 +16,8 @@ pub enum ChartError {
     UpdateError(String),
     #[error("Failed to decode chart")]
     DecodeError,
-    #[error("Failed to create chart")]
-    CreateError,
+    #[error("Failed to create chart: {0}")]
+    CreateError(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

@@ -17,7 +17,6 @@ serde-wasm-bindgen = "0.5"
 wasm-bindgen = { version = "0.2" }
 web-sys = { version = "0.3", features = ["Document", "Element", "Window"] }
 chartcharm_shared = { path = "../src-shared" }
-chartcharm_database = { path = "../src-db" }
 
 tauri-sys = { git = "https://github.com/JonasKruckenberg/tauri-sys", rev = "904450", features = [
   "all",
