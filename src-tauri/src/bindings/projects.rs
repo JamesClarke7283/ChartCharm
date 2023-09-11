@@ -1,7 +1,7 @@
 use chartcharm_database::{get_connection, rusqlite_to_string};
 use chartcharm_shared::project::{Project, ProjectError};
 use chrono::prelude::*;
-use rusqlite::{params, Connection, Result, Row};
+use rusqlite::{params, Result};
 
 pub fn create_projects_table() -> Result<(), ProjectError> {
     let conn = match get_connection() {

@@ -1,7 +1,7 @@
 use chartcharm_database::get_connection;
 use chartcharm_shared::data_point::{DataPoint, DataPointError};
 use chrono::prelude::*;
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Result};
 
 pub fn create_datapoints_table() -> Result<(), DataPointError> {
     let conn = match get_connection() {

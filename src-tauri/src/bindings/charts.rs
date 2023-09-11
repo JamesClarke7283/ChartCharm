@@ -1,7 +1,7 @@
-use chartcharm_database::{get_connection, rusqlite_to_string};
+use chartcharm_database::get_connection;
 use chartcharm_shared::chart::{Chart, ChartError};
 use chrono::prelude::*;
-use rusqlite::{params, Connection, Result, Row};
+use rusqlite::{params, Result};
 
 pub fn create_charts_table() -> Result<(), ChartError> {
     let conn = match get_connection() {
@@ -13,7 +13,7 @@ pub fn create_charts_table() -> Result<(), ChartError> {
             ))
         }
     };
-    conn.execute(
+    match conn.execute(
         "CREATE TABLE IF NOT EXISTS charts (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
@@ -26,7 +26,12 @@ pub fn create_charts_table() -> Result<(), ChartError> {
             FOREIGN KEY (kind) REFERENCES chart_kind(id)
         );",
         params![],
-    );
+    ) {
+        Ok(_) => (),
+        Err(e) => {
+            return Err(ChartError::CreateError(e.to_string()));
+        }
+    };
     Ok(())
 }
 
@@ -46,7 +51,7 @@ pub fn add_chart(
             ))
         }
     };
-    conn.execute(
+    match conn.execute(
         "INSERT INTO charts (name, description, project, kind, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6);",
         params![
             name,
@@ -56,7 +61,12 @@ pub fn add_chart(
             Utc::now().timestamp(),
             Utc::now().timestamp()
         ],
-    );
+    ) {
+        Ok(_) => (),
+        Err(e) => {
+            return Err(ChartError::InsertError(e.to_string()));
+        }
+    };
     Ok(())
 }
 
@@ -153,7 +163,12 @@ pub fn delete_chart(id: u16) -> Result<(), ChartError> {
             ))
         }
     };
-    conn.execute("DELETE FROM charts WHERE id = ?1;", params![id]);
+    match conn.execute("DELETE FROM charts WHERE id = ?1;", params![id]) {
+        Ok(_) => (),
+        Err(e) => {
+            return Err(ChartError::DeleteError(e.to_string()));
+        }
+    };
     Ok(())
 }
 
@@ -174,7 +189,7 @@ pub fn update_chart(
             ))
         }
     };
-    conn.execute(
+    match conn.execute(
         "UPDATE charts SET name = ?1, description = ?2, project = ?3, kind = ?4, updated_at = ?5 WHERE id = ?6;",
         params![
             name,
@@ -184,6 +199,11 @@ pub fn update_chart(
             Utc::now().timestamp(),
             id
         ],
-    );
+    ) {
+        Ok(_) => (),
+        Err(e) => {
+            return Err(ChartError::UpdateError(e.to_string()));
+        }
+    };
     Ok(())
 }

@@ -1,7 +1,6 @@
 use chartcharm_database::get_connection;
-use chartcharm_shared::chart_kind::{ChartKind, ChartKindError};
-use chrono::prelude::*;
-use rusqlite::{params, Connection, Result, Row};
+use chartcharm_shared::chart_kind::ChartKindError;
+use rusqlite::{params, Result};
 
 pub fn populate_chartkind_table() -> Result<(), ChartKindError> {
     let conn = match get_connection() {

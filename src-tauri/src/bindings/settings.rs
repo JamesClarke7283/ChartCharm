@@ -1,6 +1,6 @@
 use chartcharm_database::get_connection;
 use chartcharm_shared::settings::SettingsError;
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Result};
 
 pub fn populate_settings_table() -> Result<(), SettingsError> {
     let conn = match get_connection() {

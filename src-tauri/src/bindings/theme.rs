@@ -3,7 +3,7 @@ use chartcharm_shared::theme::ThemeError;
 use rusqlite::params;
 
 pub fn populate_theme_table() -> Result<(), ThemeError> {
-    let mut db = get_connection()
+    let db = get_connection()
         .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
     db.execute(
         "INSERT INTO theme (name) VALUES (?1), (?2), (?3)",
@@ -14,7 +14,7 @@ pub fn populate_theme_table() -> Result<(), ThemeError> {
 }
 
 pub fn create_theme_table() -> Result<(), ThemeError> {
-    let mut db = get_connection()
+    let db = get_connection()
         .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
     db.execute(
         "CREATE TABLE IF NOT EXISTS theme (id INTEGER PRIMARY KEY, name TEXT NOT NULL)",
@@ -26,7 +26,7 @@ pub fn create_theme_table() -> Result<(), ThemeError> {
 
 #[tauri::command]
 pub fn insert_theme(name: &str) -> Result<(), ThemeError> {
-    let mut db = get_connection()
+    let db = get_connection()
         .map_err(|e| ThemeError::ConnectionError("N/A".to_string(), e.to_string()))?;
     db.execute("INSERT INTO theme (name) VALUES (?1)", params![name])
         .map_err(|e| ThemeError::InsertError(e.to_string()))?;
@@ -35,7 +35,7 @@ pub fn insert_theme(name: &str) -> Result<(), ThemeError> {
 
 #[tauri::command]
 pub fn query_theme(id: u8) -> Result<String, ThemeError> {
-    let mut db =
+    let db =
         get_connection().map_err(|e| ThemeError::ConnectionError(id.to_string(), e.to_string()))?;
     let mut stmt = db
         .prepare("SELECT name FROM theme WHERE id = ?1")
