@@ -1,18 +1,5 @@
 # Chart Charm
 
-- [Tauri][tauri_web]
-- [Leptos][leptos_repo]
-
-See [Prerequisites](#prerequisites) section.
-
-```sh
-# Build and develop for desktop
-cargo tauri dev
-
-# Build and release for desktop
-cargo tauri build
-```
-
 ## Prerequisites
 
 ```sh
@@ -46,7 +33,11 @@ npm install --global tailwindcss
 # Running The App in Dev Mode
 
 ```sh
+# Build and develop for desktop
 cargo tauri dev
+
+# Build and release for desktop
+cargo tauri build
 ```
 
 # License
